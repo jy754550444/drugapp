@@ -1,18 +1,18 @@
 # coding=utf-8
 from django.contrib import admin
 from django.contrib.auth.models import Group, User
-from .models import Administrations,Category,Measurement,Region,Sale,Storage
+from .models import DrugStock,Category,Unit,Region,DrugSale,DrugPurchase
 
 from mptt.admin import MPTTModelAdmin
 # Register your models here.
 
-#药品管理
-class AdministrationsAdmin(admin.ModelAdmin):
-    list_display = ['drugs_id', 'drugs_name', 'stock_count','company_id','input_owner', 'update_time', 'create_time', ]
-    fields = ('drugs_name', 'bar_code', 'or_code', 'category', 'measurement', 'model', 'mnemonic', 'manufacturer',
-              'register_code', 'stock_count',)
-    search_fields = ('drugs_id',)
-    list_filter = ('drugs_name',)
+#药品库存
+
+class DrugStockAdmin(admin.ModelAdmin):
+    list_display = [ 'name', 'stock_count','category','unit', 'model', 'manufacturer','register_code' ]
+    fields = ('name', 'bar_code', 'or_code', 'category', 'unit', 'model', 'manufacturer','register_code','stock_count',)
+    search_fields = ('name','category__name','model','manufacturer','register_code')
+    list_filter = ('name','category')
 
     def save_model(self, request, obj, form, change):
         obj.input_owner = request.user
@@ -20,26 +20,25 @@ class AdministrationsAdmin(admin.ModelAdmin):
         if userobj.groups.count() > 0:
             groups = userobj.groups.all()
             group = Group.objects.get(pk=groups[0].id)
-            obj.company_id = group
+            obj.group = group
         obj.save()
 
     def get_queryset(self, request):
-        qs = super(AdministrationsAdmin, self).get_queryset(request)
+        qs = super(DrugStockAdmin, self).get_queryset(request)
         if request.user.is_superuser:
             return qs
         else:
             groups = request.user.groups.all()
             group = Group.objects.get(pk=groups[0].id)
-            return qs.filter(company_id=group)
+            return qs.filter(group=group)
 
-admin.site.register(Administrations, AdministrationsAdmin)
+admin.site.register(DrugStock, DrugStockAdmin)
 
 #药品类别
 class CategoryAdmin(MPTTModelAdmin):
-    # list_display = ['drugs_id', 'drugs_name','parent','create_time',]
-    # fields  = ('project','title','content','category','uploadfile')
-    search_fields = ['drugs_id']
-    list_filter = ('drugs_name',)
+    list_display = ['name','parent']
+    search_fields = ['name']
+    list_filter = ('name',)
 
     def get_queryset(self, request):
         qs = super(CategoryAdmin, self).get_queryset(request)
@@ -52,53 +51,44 @@ admin.site.register(Category, CategoryAdmin)
 
 
 #计量单位
-class MeasurementAdmin(admin.ModelAdmin):
-    list_display = ['measurement_id', 'metering_name','create_time',]
-    # fields  = ('project','title','content','category','uploadfile')
-    search_fields = ['measurement_id']
-    list_filter = ('metering_name',)
-
+class UnitAdmin(admin.ModelAdmin):
+    list_display = ['name']
+    search_fields = ['name']
+    list_filter = ('name',)
 
     def get_queryset(self, request):
-        qs = super(MeasurementAdmin, self).get_queryset(request)
+        qs = super(UnitAdmin, self).get_queryset(request)
         if request.user.is_superuser:
             return qs
         else:
             return qs.filter(user=request.user)
-admin.site.register(Measurement,MeasurementAdmin)
+admin.site.register(Unit,UnitAdmin)
 
 
 #地区
 class RegionAdmin(admin.ModelAdmin):
-    list_display = ['region_name','create_time',]
-    # fields  = ('project','title','content','category','uploadfile')
-    search_fields = ['region_name']
-    list_filter = ('region_name',)
-
-
+    list_display = ['name']
+    search_fields = ['name']
+    list_filter = ('name',)
 
     def get_queryset(self, request):
         qs = super(RegionAdmin, self).get_queryset(request)
         if request.user.is_superuser:
             return qs
         else:
-
             return qs.filter(user=request.user)
 admin.site.register(Region,RegionAdmin)
 
-
 #药品销售
-class SaleAdmin(admin.ModelAdmin):
-    list_display = ['sale_id', 'drugs_name', 'sale_count', 'update_time', 'create_time', ]
-    fields = ('drugs_name', 'measurement', 'model', 'manufacturer', 'register_code', 'customer_name', 'customer_tel',
-              'customer_address', 'sale_count')
-    search_fields = ['sale_id']
+class DrugSaleAdmin(admin.ModelAdmin):
+    list_display = ['drugs_name','unit','model','manufacturer','register_code','customer_name','customer_tel','sale_count', 'update_time', ]
+    fields = ('drugs_name', 'unit', 'model', 'manufacturer', 'register_code', 'customer_name', 'customer_tel',
+              'customer_address', 'sale_count','update_time')
+    search_fields = ['drugs_name','customer_name','customer_tel','model','manufacturer','register_code']
     list_filter = ('drugs_name',)
 
-
-
     def get_queryset(self, request):
-        qs = super(SaleAdmin, self).get_queryset(request)
+        qs = super(DrugSaleAdmin, self).get_queryset(request)
         if request.user.is_superuser:
             return qs
         else:
@@ -108,32 +98,31 @@ class SaleAdmin(admin.ModelAdmin):
 
     def save_model(self, request, obj, form, change):
 
-        ad = Administrations.objects.get(drugs_name=obj.drugs_name)
-        if int(ad.stock_count)>int(obj.sale_count):
-            ad.stock_count = int(ad.stock_count)-int(obj.sale_count)
-            ad.save()
-            re = super(SaleAdmin,self).save_model(request, obj, form, change)
+        ds = DrugStock.objects.get(name=obj.drugs_name)
+        if int(ds.stock_count)>int(obj.sale_count):
+            ds.stock_count = int(ds.stock_count)-int(obj.sale_count)
+            ds.save()
+            re = super(DrugSaleAdmin,self).save_model(request, obj, form, change)
             return re
-
 
         obj.input_owner = request.user
         userobj = request.user
         if userobj.groups.count() > 0:
             groups = userobj.groups.all()
             group = Group.objects.get(pk=groups[0].id)
-            obj.company_id = group
+            obj.group = group
         obj.save()
-admin.site.register(Sale, SaleAdmin)
+admin.site.register(DrugSale, DrugSaleAdmin)
 
 
-class StorageAdmin(admin.ModelAdmin):
-    list_display = ('storage_id','drugs_name','stock_count','update_time','create_time')
-    fields  = ('drugs_name','measurement','model','manufacturer','register_code','stock_count')
+class DrugPurchaseAdmin(admin.ModelAdmin):
+    list_display = ('drugs_name','unit','model','manufacturer','register_code','purchase_count','update_time')
+    fields  = ('drugs_name','unit','model','manufacturer','register_code','purchase_count','update_time')
     search_fields = ['storage_id']
     list_filter = ('drugs_name',)
 
     def get_queryset(self, request):
-        qs = super(StorageAdmin, self).get_queryset(request)
+        qs = super(DrugPurchaseAdmin, self).get_queryset(request)
         if request.user.is_superuser:
             return qs
         else:
@@ -150,12 +139,10 @@ class StorageAdmin(admin.ModelAdmin):
             obj.company_id = group
         obj.save()
 
-        re = super(StorageAdmin,self).save_model(request, obj, form, change)
-        ad = Administrations.objects.get(drugs_name=obj.drugs_name)
-        ad.stock_count = int(obj.stock_count)+int(ad.stock_count)
+        re = super(DrugPurchaseAdmin,self).save_model(request, obj, form, change)
+        ad = DrugStock.objects.get(name=obj.drugs_name)
+        ad.stock_count = int(obj.purchase_count)+int(ad.stock_count)
         ad.save()
         return re
 
-
-
-admin.site.register(Storage,StorageAdmin)
+admin.site.register(DrugPurchase,DrugPurchaseAdmin)
