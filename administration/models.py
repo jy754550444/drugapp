@@ -42,7 +42,7 @@ class DrugStock(models.Model):
     register_code = models.CharField(verbose_name=u'登记证号',max_length=50,)
     group = models.ForeignKey(Group,verbose_name=u'单位编码', null=True, on_delete=models.CASCADE)
     input_owner = models.ForeignKey(User,verbose_name=u'录入人员', null=True, on_delete=models.CASCADE)
-    stock_count=models.CharField(verbose_name=u'库存数量',max_length=50,null=True, blank=True,)
+    stock_count=models.IntegerField(verbose_name=u'库存数量',null=True, blank=True,default=0)
     update_time = models.DateTimeField(verbose_name=u'更新时间',auto_now=True,auto_now_add=False)
     create_time = models.DateTimeField(verbose_name=u'录入时间', auto_now_add=True,auto_now=False)
 
@@ -80,12 +80,12 @@ class DrugSale(models.Model):
     customer_address = models.CharField(verbose_name=u'客户地址',max_length=50,)
     group = models.ForeignKey(Group,verbose_name=u'单位编码', null=True, on_delete=models.CASCADE)
     input_owner = models.ForeignKey(User,verbose_name=u'录入人员', null=True, on_delete=models.CASCADE)
-    sale_count=models.CharField(verbose_name=u'销售数量',max_length=50,)
+    sale_count=models.IntegerField(verbose_name=u'销售数量',default=0)
     update_time = models.DateField(verbose_name=u'销售时间',)
     create_time = models.DateTimeField(verbose_name=u'录入时间', auto_now_add=True,auto_now=False)
 
     def __str__(self):
-        return self.drugs_name
+        return self.drugs_name.name
 
     class Meta:
         verbose_name = u'药品销售'
@@ -102,12 +102,12 @@ class DrugPurchase(models.Model):
     register_code = models.CharField(verbose_name=u'登记证号',max_length=50,)
     group = models.ForeignKey(Group,verbose_name=u'单位编码', null=True, on_delete=models.CASCADE)
     input_owner = models.ForeignKey(User,verbose_name=u'录入人员', null=True, on_delete=models.CASCADE)
-    purchase_count=models.CharField(verbose_name=u'采购数量',max_length=50,)
+    purchase_count=models.IntegerField(verbose_name=u'采购数量')
     update_time = models.DateField(verbose_name=u'采购时间',)
     create_time = models.DateTimeField(verbose_name=u'录入时间', auto_now_add=True,auto_now=False)
 
     def __str__(self):
-        return self.drugs_name
+        return self.drugs_name.name
 
     class Meta:
         verbose_name = u'药品采购'

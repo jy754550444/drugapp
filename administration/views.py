@@ -12,11 +12,10 @@ from django.views.decorators.csrf import csrf_exempt
 
 # 后台自动获取数据ajax
 def admins(request):
-    data = request.GET.get('typename')
-    all_data = DrugStock.objects.get(drugs_id=data)
-    retValue = {'model': all_data.model, 'manufacturer': all_data.manufacturer, 'register_code': all_data.register_code}
+    id = request.GET.get('drugid')
+    all_data = DrugStock.objects.get(id=id)
+    retValue = {'model': all_data.model,'unit':all_data.unit.id, 'manufacturer': all_data.manufacturer, 'register_code': all_data.register_code}
     return HttpResponse(json.dumps(retValue), content_type="application/json")
-
 
 # 获取验证码
 def CheckCode(request):

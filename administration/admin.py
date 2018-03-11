@@ -9,7 +9,7 @@ from mptt.admin import MPTTModelAdmin
 #药品库存
 
 class DrugStockAdmin(admin.ModelAdmin):
-    list_display = [ 'name', 'stock_count','category','unit', 'model', 'manufacturer','register_code' ]
+    list_display = [ 'name','category','unit', 'model', 'manufacturer','register_code', 'stock_count' ]
     fields = ('name', 'bar_code', 'or_code', 'category', 'unit', 'model', 'manufacturer','register_code','stock_count',)
     search_fields = ('name','category__name','model','manufacturer','register_code')
     list_filter = ('name','category')
@@ -98,9 +98,9 @@ class DrugSaleAdmin(admin.ModelAdmin):
 
     def save_model(self, request, obj, form, change):
 
-        ds = DrugStock.objects.get(name=obj.drugs_name)
-        if int(ds.stock_count)>int(obj.sale_count):
-            ds.stock_count = int(ds.stock_count)-int(obj.sale_count)
+        ds = DrugStock.objects.get(id=obj.drugs_name.id)
+        if ds.stock_count > obj.sale_count:
+            ds.stock_count = ds.stock_count - obj.sale_count
             ds.save()
             re = super(DrugSaleAdmin,self).save_model(request, obj, form, change)
             return re
@@ -128,7 +128,7 @@ class DrugPurchaseAdmin(admin.ModelAdmin):
         else:
             groups = request.user.groups.all()
             group = Group.objects.get(pk=groups[0].id)
-            return qs.filter(company_id=group)
+            return qs.filter(group=group)
 
     def save_model(self, request, obj, form, change):
         obj.input_owner = request.user
@@ -136,13 +136,14 @@ class DrugPurchaseAdmin(admin.ModelAdmin):
         if userobj.groups.count() > 0:
             groups = userobj.groups.all()
             group = Group.objects.get(pk=groups[0].id)
-            obj.company_id = group
+            obj.group = group
         obj.save()
-
-        re = super(DrugPurchaseAdmin,self).save_model(request, obj, form, change)
-        ad = DrugStock.objects.get(name=obj.drugs_name)
-        ad.stock_count = int(obj.purchase_count)+int(ad.stock_count)
+        print("-----------------")
+        print(obj.drugs_name)
+       # re = super(DrugPurchaseAdmin,self).save_model(request, obj, form, change)
+        ad = DrugStock.objects.get(id = obj.drugs_name.id)
+        ad.stock_count = obj.purchase_count + ad.stock_count
         ad.save()
-        return re
+        return obj
 
 admin.site.register(DrugPurchase,DrugPurchaseAdmin)
