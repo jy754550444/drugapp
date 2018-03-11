@@ -12,7 +12,7 @@ class DrugStockAdmin(admin.ModelAdmin):
     list_display = [ 'name','category','unit', 'model', 'manufacturer','register_code', 'stock_count' ]
     fields = ('name', 'bar_code', 'or_code', 'category', 'unit', 'model', 'manufacturer','register_code','stock_count',)
     search_fields = ('name','category__name','model','manufacturer','register_code')
-    list_filter = ('name','category')
+    list_filter = ('category','create_time')
 
     def save_model(self, request, obj, form, change):
         obj.input_owner = request.user
@@ -38,7 +38,7 @@ admin.site.register(DrugStock, DrugStockAdmin)
 class CategoryAdmin(MPTTModelAdmin):
     list_display = ['name','parent']
     search_fields = ['name']
-    list_filter = ('name',)
+    list_filter = ('parent',)
 
     def get_queryset(self, request):
         qs = super(CategoryAdmin, self).get_queryset(request)
@@ -54,7 +54,6 @@ admin.site.register(Category, CategoryAdmin)
 class UnitAdmin(admin.ModelAdmin):
     list_display = ['name']
     search_fields = ['name']
-    list_filter = ('name',)
 
     def get_queryset(self, request):
         qs = super(UnitAdmin, self).get_queryset(request)
@@ -84,7 +83,7 @@ class DrugSaleAdmin(admin.ModelAdmin):
     list_display = ['drugs_name','unit','model','manufacturer','register_code','customer_name','customer_tel','sale_count', 'update_time', ]
     fields = ('drugs_name', 'unit', 'model', 'manufacturer', 'register_code', 'customer_name', 'customer_tel',
               'customer_address', 'sale_count','update_time')
-    search_fields = ['drugs_name','customer_name','customer_tel','model','manufacturer','register_code']
+    search_fields = ['drugs_name__name','customer_name','customer_tel','model','manufacturer','register_code']
     list_filter = ('drugs_name',)
 
     def get_queryset(self, request):
@@ -118,8 +117,8 @@ admin.site.register(DrugSale, DrugSaleAdmin)
 class DrugPurchaseAdmin(admin.ModelAdmin):
     list_display = ('drugs_name','unit','model','manufacturer','register_code','purchase_count','update_time')
     fields  = ('drugs_name','unit','model','manufacturer','register_code','purchase_count','update_time')
-    search_fields = ['storage_id']
-    list_filter = ('drugs_name',)
+    search_fields = ['drugs_name__name','model','manufacturer','register_code']
+    list_filter = ('update_time',)
 
     def get_queryset(self, request):
         qs = super(DrugPurchaseAdmin, self).get_queryset(request)

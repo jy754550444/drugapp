@@ -1,16 +1,22 @@
-<!DOCTYPE html>
+{% load static %}<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8">
     <title>农药追溯系统</title>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" content="">
- {% load static %}
+    {% block  stylesheet %}
     <link  href="{% static "css/bootstrap-cerulean.min.css" %}" rel="stylesheet">
 	<link  href="{% static "css/dataTables.bootstrap.min.css" %}" rel="stylesheet">
     <link href="{% static "css/charisma-app.css" %}" rel="stylesheet">
     <link href="{% static "css/animate.min.css" %}" rel="stylesheet">
-	<script src="{% static "js/jquery.min.js" %}"></script>
+    {% endblock stylesheet %}
+    {% block extrastyle %}{% endblock extrastyle%}
+    {% block javascript %}
+        <script src="{% static "js/jquery.min.js" %}"></script>
+    {% endblock javascript%}
+    {% block extrahead %}{% endblock extrahead%}
 
     <!-- The HTML5 shim, for IE6-8 support of HTML5 elements -->
     <!--[if lt IE 9]>
@@ -19,9 +25,10 @@
 </head>
 
 <body>
-    <!-- topbar starts -->
+{% block container %}
+    {% block navbar %}
+        <!-- topbar starts -->
     <div class="navbar navbar-default" role="navigation">
-
         <div class="navbar-inner">
             <button type="button" class="navbar-toggle pull-left animated flip">
                 <span class="sr-only">导航开关</span>
@@ -29,22 +36,22 @@
                 <span class="icon-bar"></span>
                 <span class="icon-bar"></span>
             </button>
-            <a class="navbar-brand" href="index.html"><img alt="Charisma Logo" src="{% static "img/logo20.png" %}" class="hidden-xs"/><span>农药追溯</span></a>
-
+            <a class="navbar-brand" href="{% url 'drug-index' %}"><img alt="Charisma Logo" src="{% static "img/logo20.png" %}" class="hidden-xs"/><span>农药追溯</span></a>
             <!-- user dropdown starts -->
-            <div class="btn-group pull-right">
-                <button class="btn btn-default dropdown-toggle" data-toggle="dropdown">
-                    <i class="glyphicon glyphicon-user"></i><span class="hidden-sm hidden-xs"> {{ username }}</span>
-                    <span class="caret"></span>
-                </button>
-                <ul class="dropdown-menu">
-                    <li><a href="#">修改密码</a></li>
-                    <li class="divider"></li>
-                    <li><a href="/login/">退出</a></li>
-                </ul>
+            {% if user.is_active  %}
+             <div class="btn-group pull-right">
+                 <button class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+                     <i class="glyphicon glyphicon-user"></i><span class="hidden-sm hidden-xs"> {{ user.username }}</span>
+                     <span class="caret"></span>
+                 </button>
+                 <ul class="dropdown-menu">
+                     <li><a href="{% url 'admin:password_change' %}">修改密码</a></li>
+                     <li class="divider"></li>
+                     <li><a href="{% url 'admin:logout' %}">退出</a></li>
+                 </ul>
             </div>
+            {% endif %}
             <!-- user dropdown ends -->
-
             <ul class="collapse navbar-collapse nav navbar-nav top-menu">
                 <li><a href="#"><i class="glyphicon glyphicon-globe"></i>访问网站</a></li>
 				<!--
@@ -65,6 +72,8 @@
         </div>
     </div>
     <!-- topbar ends -->
+    {% endblock navbar %}
+    {% block content %}
 <div class="container-fluid">
     <div class="row">
         <!-- left menu starts -->
@@ -310,8 +319,9 @@
     </footer>
 
 </div><!--/.fluid-container-->
+      {% endblock content %}
 <!-- external javascript -->
-
+{% endblock container %}
 
 <script src="{% static "js/bootstrap.min.js" %}"></script>
 <script src="{% static "js/jquery.cookie.js" %}"></script>

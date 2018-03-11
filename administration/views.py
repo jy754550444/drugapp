@@ -60,6 +60,7 @@ def login(request):
 
 
 # 首页
+
 def index(request):
     username = request.session['username']
     data = DrugStock.objects.all().order_by('-update_time')[:10]
@@ -70,14 +71,14 @@ def index(request):
 
 
 #库存查询列表
-def admin_list(request):
+def stock_list(request):
     username = request.session['username']
     data = DrugStock.objects.all()
     return render_to_response('admin_list.html',{'datas':data,'username': username,})
 
 
 #采购查询列表
-def storage_list(request):
+def purchase_list(request):
     username = request.session['username']
     data = DrugPurchase.objects.all()
     return render_to_response('storage_list.html',{'storage_data':data, 'username': username,})
