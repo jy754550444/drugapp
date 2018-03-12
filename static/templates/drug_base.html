@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>农药追溯系统</title>
+    <title>{% block title %}农药追溯系统{% endblock %}</title>
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" content="">
@@ -66,22 +66,24 @@
             <div class="row">
                 <!-- 左侧菜单开始 -->
                 {% block leftnav %}
-                <div class="col-sm-2 col-lg-2">
+                <div class="col-sm-2 col-md-2 col-lg-2">
                     {% include "left_nav.html" %}
                 </div>
                 {% endblock leftnav %}
                 <!-- 左侧菜单结束 -->
                 <!-- 右侧内容开始 -->
                 {% block rightcontent %}
-                   <div class="col-lg-10 col-sm-10"> <!-- content starts -->
+                   <div class="col-lg-10 col-md-10 col-sm-10"> <!-- content starts -->
                    <!-- 面板圈开始-->
-                    {% block breadcrumb %}
+
                         <div>
                             <ul class="breadcrumb">
+                                {% block breadcrumb %}
                                 <li><a href="#">首页</a></li>
+                                {% endblock breadcrumb %}
                             </ul>
                         </div>
-                    {% endblock breadcrumb %}
+
                     <!-- 面板圈结束-->
                     {% block righttop %}{% endblock righttop %} <!-- 右侧内容上部-->
                     {% block rightmiddle %}{% endblock rightmiddle %} <!-- 右侧内容中部-->

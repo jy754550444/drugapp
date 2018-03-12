@@ -19,8 +19,8 @@ from django.conf.urls import url,include
 from django.contrib import admin
 from django.conf.urls.static import static
 from django.conf import settings
-from administration.views import login, CheckCode, admins, index, stock_list, sale_list, purchase_list, DrugStockListView
-
+from administration.views import login, CheckCode, admins, index, stock_list, sale_list, purchase_list
+from administration.views import DrugStockListView,DrugPurchaseListView,DrugSaleListView
 admin.site.site_header = u'农药追溯系统'
 
 admin.site.site_title = u'农药追溯系统'
@@ -33,9 +33,11 @@ urlpatterns = [
     url(r'^admins/$', admins),
     url(r'^index/$', index,name="drug-index"),
     url(r'^stock_list/$', stock_list,name="stock-list"),
-    url(r'^sale_list/$', sale_list,name="sale-list"),
+    url(r'^sale_list/$', sale_list, name="sale-list"),
     url(r'^purchase_list/$', purchase_list,name="purchase-list"),
     url(r'^api_stocklist/$', DrugStockListView.as_view(),name="api-stocklist"),
+    url(r'^api_purchaselist/$', DrugPurchaseListView.as_view(),name="api-purchaselist"),
+    url(r'^api_salelist/$', DrugSaleListView.as_view(),name="api-salelist"),
     # url(r'^jet/', include('jet.urls', 'jet')),  # Django JET URLS
     # url(r'^jet/dashboard/', include('jet.dashboard.urls', 'jet-dashboard')),  # Django JET dashboard URLSc
 ]
