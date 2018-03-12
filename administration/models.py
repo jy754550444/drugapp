@@ -21,6 +21,7 @@ class Category(MPTTModel):
 #计量单位
 class Unit(models.Model):
     name = models.CharField(verbose_name=u'计量名称',max_length=50,)
+
     def __str__(self):
         return self.name
 

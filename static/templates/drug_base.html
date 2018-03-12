@@ -1,7 +1,7 @@
 {% load static %}<!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="utf-8">
+    <meta charset="UTF-8">
     <title>农药追溯系统</title>
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -9,12 +9,14 @@
     {% block  stylesheet %}
     <link  href="{% static "css/bootstrap-cerulean.min.css" %}" rel="stylesheet">
 	<link  href="{% static "css/dataTables.bootstrap.min.css" %}" rel="stylesheet">
+
     <link href="{% static "css/charisma-app.css" %}" rel="stylesheet">
     <link href="{% static "css/animate.min.css" %}" rel="stylesheet">
     {% endblock stylesheet %}
     {% block extrastyle %}{% endblock extrastyle%}
     {% block javascript %}
         <script src="{% static "js/jquery.min.js" %}"></script>
+
     {% endblock javascript%}
     {% block extrahead %}{% endblock extrahead%}
 
@@ -26,8 +28,8 @@
 
 <body>
 {% block container %}
-    {% block navbar %}
-        <!-- topbar starts -->
+    {% block navbar %}        <!-- 头部导航开始 -->
+
     <div class="navbar navbar-default" role="navigation">
         <div class="navbar-inner">
             <button type="button" class="navbar-toggle pull-left animated flip">
@@ -54,286 +56,69 @@
             <!-- user dropdown ends -->
             <ul class="collapse navbar-collapse nav navbar-nav top-menu">
                 <li><a href="#"><i class="glyphicon glyphicon-globe"></i>访问网站</a></li>
-				<!--
-                <li class="dropdown">
-                    <a href="#" data-toggle="dropdown"><i class="glyphicon glyphicon-star"></i>下拉框 <span
-                            class="caret"></span></a>
-                    <ul class="dropdown-menu" role="menu">
-                        <li><a href="#">功能1</a></li>
-                        <li><a href="#">功能1</a></li>
-                        <li><a href="#">功能1</a></li>
-                        <li class="divider"></li>
-                        <li><a href="#">功能1</a></li>
-                    </ul>
-                </li>
-                -->
             </ul>
 
         </div>
     </div>
-    <!-- topbar ends -->
-    {% endblock navbar %}
+    {% endblock navbar %}    <!-- 头部导航结束 -->
     {% block content %}
-<div class="container-fluid">
-    <div class="row">
-        <!-- left menu starts -->
-        <div class="col-sm-2 col-lg-2">
-            <div class="sidebar-nav">
-                <div class="nav-canvas">
-                    <div class="nav-sm nav nav-stacked">
-
-                    </div>
-                    <ul class="nav nav-pills nav-stacked main-menu">
-                        <li class="nav-header">主菜单</li>
-                        <li><a class="ajax-link" href="{% url 'drug-index' %}"><i class="glyphicon glyphicon-home"></i><span>  首页</span></a></li>
-                        <li><a class="ajax-link" href="{% url 'purchase-list' %}"><i class="glyphicon glyphicon-eye-open"></i><span>  采购查询</span></a></li>
-                        <li><a class="ajax-link" href="{% url 'sale-list' %}"><i class="glyphicon glyphicon-edit"></i><span>  销售查询</span></a></li>
-                        <li><a class="ajax-link" href="{% url 'stock-list' %}"><i class="glyphicon glyphicon-list-alt"></i><span>  库存查询</span></a></li>
-                        <li class="nav-header hidden-md">数据统计</li>
-                        <li><a class="ajax-link" href=""><i class="glyphicon glyphicon-align-justify"></i><span>  采购统计</span></a></li>
-                        <li class="accordion">
-                            <a href="#"><i class="glyphicon glyphicon-plus"></i><span>  销售统计</span></a>
-                            <ul class="nav nav-pills nav-stacked">
-                                <li><a href="#">销售月统计</a></li>
-                                <li><a href="#">销售年统计</a></li>
-                            </ul>
-                        </li>
-                        <li><a class="ajax-link" href="calendar.html"><i class="glyphicon glyphicon-calendar"></i><span>  库存统计</span></a>
-                        </li>
-                    </ul>
-                    <label id="for-is-ajax" for="is-ajax"></label>
+        <div class="container-fluid">
+            <div class="row">
+                <!-- 左侧菜单开始 -->
+                {% block leftnav %}
+                <div class="col-sm-2 col-lg-2">
+                    {% include "left_nav.html" %}
                 </div>
-            </div>
-        </div>
-        <!-- left menu ends -->
-		<div id="content" class="col-lg-10 col-sm-10">
-        <!-- content starts -->
-        <div>
-			<ul class="breadcrumb">
-				<li><a href="#">首页</a></li>
-			</ul>
-		</div>
-		<div class=" row">
-			<div class="col-md-3 col-sm-3 col-xs-6">
-				<a data-toggle="tooltip" title="" class="well top-block" href="#">
-					<i class="glyphicon glyphicon-user blue"></i>
-					<div>日采购量</div>
-					<div>507</div>
-					<span class="notification">6</span>
-				</a>
-			</div>
+                {% endblock leftnav %}
+                <!-- 左侧菜单结束 -->
+                <!-- 右侧内容开始 -->
+                {% block rightcontent %}
+                   <div class="col-lg-10 col-sm-10"> <!-- content starts -->
+                   <!-- 面板圈开始-->
+                    {% block breadcrumb %}
+                        <div>
+                            <ul class="breadcrumb">
+                                <li><a href="#">首页</a></li>
+                            </ul>
+                        </div>
+                    {% endblock breadcrumb %}
+                    <!-- 面板圈结束-->
+                    {% block righttop %}{% endblock righttop %} <!-- 右侧内容上部-->
+                    {% block rightmiddle %}{% endblock rightmiddle %} <!-- 右侧内容中部-->
+                    {% block rightbottom %}{% endblock rightbottom %} <!-- 右侧内容下部-->
+                    </div>
+                {% endblock rightcontent %}
+                <!-- 右侧内容结束 -->
+            </div><!--/#content.col-md-0-->
+        </div><!--/fluid-row-->
+        {% block footer %}
+            <hr>
+            <footer class="row">
+                <p class="col-md-9 col-sm-9 col-xs-12 copyright">&copy;
+                <a href="#" target="_blank">Muhammad Usman</a> 2012 - 2015</p>
+                <p class="col-md-3 col-sm-3 col-xs-12 powered-by">Powered by: <a href="">Charisma</a></p>
+            </footer>
+        {% endblock footer %}
 
-			<div class="col-md-3 col-sm-3 col-xs-6">
-				<a data-toggle="tooltip" title="" class="well top-block" href="#">
-					<i class="glyphicon glyphicon-star green"></i>
-
-					<div>月销售量</div>
-					<div>228</div>
-					<span class="notification green">4</span>
-				</a>
-			</div>
-
-			<div class="col-md-3 col-sm-3 col-xs-6">
-				<a data-toggle="tooltip" title="日销售量" class="well top-block" href="#">
-					<i class="glyphicon glyphicon-shopping-cart yellow"></i>
-
-					<div>日销售量</div>
-					<div>13320</div>
-					<span class="notification yellow">34</span>
-				</a>
-			</div>
-
-			<div class="col-md-3 col-sm-3 col-xs-6">
-				<a data-toggle="tooltip" title="" class="well top-block" href="#">
-					<i class="glyphicon glyphicon-envelope red"></i>
-					<div>月销售量</div>
-					<div>25</div>
-					<span class="notification red">12</span>
-				</a>
-			</div>
-		</div>
-
-<div class="row">
-    <div class="box col-md-12">
-    <div class="box-inner">
-    <div class="box-header well" data-original-title="">
-        <h2><i class="glyphicon glyphicon-list-alt"></i> 库存列表</h2>
-        <div class="box-icon">
-            <a href="#" class="btn btn-minimize btn-round btn-default"><i class="glyphicon glyphicon-chevron-up"></i></a>
-            <a href="#" class="btn btn-close btn-round btn-default"><i class="glyphicon glyphicon-remove"></i></a>
-        </div>
-    </div>
-    <div class="box-content">
-    <table class="table table-striped table-bordered bootstrap-datatable datatable responsive">
-    <thead>
-    <tr>
-        <th>药品编号</th>
-        <th>药品名称</th>
-        <th>库存数量</th>
-        <td>药品类别</td>
-        <td>计量单位</td>
-        <td>规格型号</td>
-        <td>生产厂家</td>
-        <td>登记型号</td>
-        <th>更新时间</th>
-        <th>录入时间</th>
-    </tr>
-    </thead>
-    <tbody>
-{% for i in datas %}
-	<tr>
-        <td>{{ i.drugs_id }}</td>
-        <td class="center">{{ i.drugs_name }}</td>
-        <td class="center">{{ i.stock_count}}</td>
-        <td class="center">{{ i.category }}
-{#            <span class="label-default label">Inactive</span>#}
-        </td>
-        <td class="center">{{ i.measurement }}</td>
-        <td class="center">{{ i.model }}</td>
-        <td class="center">{{ i.manufacturer }}</td>
-        <td class="center">{{ i.register_code }}</td>
-        <td class="center">{{ i.update_time }}</td>
-        <td class="center">{{ i.create_time }}</td>
-
-    </tr>
-{% endfor %}
-   
-    </tbody>
-    </table>
-    </div>
-    </div>
-	</div>
-</div>
-
-<div class="row">
-    <div class="box col-md-12">
-    <div class="box-inner">
-    <div class="box-header well" data-original-title="">
-        <h2><i class="glyphicon glyphicon-list-alt"></i> 采购列表</h2>
-        <div class="box-icon">
-            <a href="#" class="btn btn-minimize btn-round btn-default"><i class="glyphicon glyphicon-chevron-up"></i></a>
-            <a href="#" class="btn btn-close btn-round btn-default"><i class="glyphicon glyphicon-remove"></i></a>
-        </div>
-    </div>
-    <div class="box-content">
-    <table class="table table-striped table-bordered bootstrap-datatable datatable responsive">
-    <thead>
-    <tr>
-        <th>采购编号</th>
-        <th>药品名称</th>
-        <th>计量单位</th>
-        <th>规格型号</th>
-        <th>生产厂家</th>
-        <th>登记证号</th>
-        <th>采购数量</th>
-        <th>更新时间</th>
-        <th>录入时间</th>
-    </tr>
-    </thead>
-    <tbody>
-    {% for s in storage_data %}
-	<tr>
-        <td>{{ s.storage_id }}</td>
-        <td class="center">{{ s.drugs_name }}</td>
-        <td class="center">{{ s.measurement }}</td>
-        <td class="center">{{ s.model }}
-{#            <span class="label-default label">Inactive</span>#}
-        </td>
-        <td class="center">{{ s.manufacturer }}</td>
-        <td>{{ s.register_code }}</td>
-        <td>{{ s.stock_count }}</td>
-        <td>{{ s.update_time }}</td>
-        <td>{{ s.create_time }}</td>
-
-    </tr>
-    {% endfor %}
-    </tbody>
-    </table>
-    </div>
-    </div>
-	</div>
-</div>
-
-<div class="row">
-    <div class="box col-md-12">
-    <div class="box-inner">
-    <div class="box-header well" data-original-title="">
-        <h2><i class="glyphicon glyphicon-list-alt"></i> 销售列表</h2>
-        <div class="box-icon">
-            <a href="#" class="btn btn-minimize btn-round btn-default"><i class="glyphicon glyphicon-chevron-up"></i></a>
-            <a href="#" class="btn btn-close btn-round btn-default"><i class="glyphicon glyphicon-remove"></i></a>
-        </div>
-    </div>
-    <div class="box-content">
-    <table class="table table-striped table-bordered bootstrap-datatable datatable responsive">
-    <thead>
-    <tr>
-        <th>销售编号</th>
-        <th>药品名称</th>
-        <th>计量单位</th>
-        <th>规格型号</th>
-        <th>生产厂家</th>
-        <th>登记证号</th>
-        <th>客户姓名</th>
-        <th>客户电话</th>
-        <th>客户地址</th>
-        <th>采购数量</th>
-        <th>更新时间</th>
-        <th>录入时间</th>
-    </tr>
-    </thead>
-    <tbody>
-    {% for a in sale_data %}
-	<tr>
-        <td>{{ a.sale_id }}</td>
-        <td class="center">{{ a.drugs_name }}</td>
-        <td class="center">{{ a.measurement }}</td>
-        <td class="center">{{ a.model }}
-{#            <span class="label-default label">Inactive</span>#}
-        </td>
-        <td class="center">{{ a.manufacturer }}</td>
-        <td>{{ a.register_code }}</td>
-        <td>{{ a.customer_name }}</td>
-        <td>{{ a.customer_tel }}</td>
-        <td>{{ a.customer_address }}</td>
-        <td>{{ a.sale_count }}</td>
-        <td>{{ a.update_time }}</td>
-        <td>{{ a.create_time }}</td>
-    </tr>
-   {% endfor %}
-    </tbody>
-    </table>
-    </div>
-    </div>
-	</div>
-</div>
-
-    <!-- content ends -->
-    </div><!--/#content.col-md-0-->
-</div><!--/fluid-row-->
-	<hr>
-    <footer class="row">
-        <p class="col-md-9 col-sm-9 col-xs-12 copyright">&copy; 
-		<a href="#" target="_blank">Muhammad Usman</a> 2012 - 2015</p>
-        <p class="col-md-3 col-sm-3 col-xs-12 powered-by">Powered by: <a href="">Charisma</a></p>
-    </footer>
-
-</div><!--/.fluid-container-->
+        </div><!--/.fluid-container-->
       {% endblock content %}
-<!-- external javascript -->
-{% endblock container %}
 
+{% endblock container %}
+<!-- external javascript -->
+{% block bottomjs %}
 <script src="{% static "js/bootstrap.min.js" %}"></script>
 <script src="{% static "js/jquery.cookie.js" %}"></script>
 <script src='{% static "js/jquery.dataTables.min.js" %}'></script>
+<script src="{% static "js/dataTables.bootstrap.js" %}"></script>
 <script src="{% static "js/chosen.jquery.min.js" %}"></script>
-<script src="{% static "js/jquery.min.js" %}"></script>
 <script src="{% static "js/jquery.raty.min.js" %}"></script>
 <script src="{% static "js/jquery.iphone.toggle.js" %}"></script>
 <script src="{% static "js/jquery.autogrow-textarea.js" %}"></script>
 <script src="{% static "js/jquery.uploadify-3.1.min.js" %}"></script>
 <script src="{% static "js/jquery.history.js" %}"></script>
-<script src="{% static "js/charisma.js" %}"></script>
-
+{#<script src="{% static "js/charisma.js" %}"></script>#}
+{% endblock bottomjs %}
+{% block extrajs %}
+{% endblock extrajs %}
 </body>
 </html>

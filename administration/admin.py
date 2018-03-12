@@ -38,7 +38,7 @@ admin.site.register(DrugStock, DrugStockAdmin)
 class CategoryAdmin(MPTTModelAdmin):
     list_display = ['name','parent']
     search_fields = ['name']
-    list_filter = ('parent',)
+
 
     def get_queryset(self, request):
         qs = super(CategoryAdmin, self).get_queryset(request)

@@ -3,12 +3,15 @@
 import json
 from django.shortcuts import render, render_to_response, HttpResponse
 import io
+from rest_framework.response import Response
+from rest_framework.views import APIView
 from .check import create_validate_code
 from django.http import HttpResponseRedirect
-from .models import DrugStock, DrugPurchase, DrugSale
+from .models import DrugStock, DrugPurchase, DrugSale,Category
 from django.contrib.auth import authenticate
 from django.views.decorators.csrf import csrf_exempt
-
+from django.db.models import Q
+from .serializers import DrugStockListSerializer,CategorySerializer
 
 # 后台自动获取数据ajax
 def admins(request):
@@ -72,9 +75,10 @@ def index(request):
 
 #库存查询列表
 def stock_list(request):
-    username = request.session['username']
-    data = DrugStock.objects.all()
-    return render_to_response('admin_list.html',{'datas':data,'username': username,})
+    context = {
+        "categorys": Category.objects.all()
+    }
+    return render_to_response('stock_list.html', context)
 
 
 #采购查询列表
@@ -89,3 +93,85 @@ def sale_list(request):
     username = request.session['username']
     data = DrugSale.objects.all()
     return render_to_response('sale_list.html',{'sale_data':data, 'username': username,})
+
+
+#库存查询列表
+class DrugStockListView(APIView):
+
+    def get(self, request, format=None):
+
+        catid = request.GET.get("catid")
+        start = int(request.GET['start'])
+        length = int(request.GET['length'])
+        draw = int(request.GET['draw'])
+
+        columnList = ('name', 'category', 'unit', 'model', 'manufacturer', 'register_code', 'stock_count')
+        #排序
+        order_column = request.GET.get("order[0][column]")
+
+        #asc desc 升序或者降序
+        order_dir = request.GET['order[0][dir]']
+        if order_column:
+            ordercol = columnList[int(order_column)]
+            if order_dir == "desc":
+                ordercol = "-" + ordercol
+
+        queryset_list = DrugStock.objects.order_by(ordercol)
+
+        recordsTotal = queryset_list.count()
+        #搜索
+        search = request.GET.get("search[value]")
+
+        #类型（首先判断有子类）
+        if catid and int(catid) > 0:
+
+            parents = Category.objects.get(id=catid)
+
+            children = parents.get_children().count()
+            descendant = parents.get_descendant_count()
+
+            cats = Category.objects.filter(parent=catid)
+
+            if cats.count() > 0:
+                queryset_list = queryset_list.filter(category__parent=catid)
+            else:
+                queryset_list = queryset_list.filter(category__id=catid)
+
+        if search and len(search) > 0:
+            queryset_list = queryset_list.filter(
+                Q(name__icontains=search) |
+                Q(category__name__icontains=search) |
+                Q(unit__name__icontains=search) |
+                Q(model__icontains=search) |
+                Q(manufacturer__icontains=search) |
+                Q(register_code__icontains=search) |
+                Q(stock_count__icontains=search)
+            )
+
+        recordsFiltered = queryset_list.count()
+
+        queryset_list = queryset_list[start:(start + length)]
+
+        serializer = DrugStockListSerializer(queryset_list,many=True)
+
+        resp = {
+            'draw': draw,
+            'recordsTotal': recordsTotal,
+            'recordsFiltered': recordsFiltered,
+            'data': serializer.data,
+        }
+
+        return Response(resp)
+
+    # def post(self,request,format=None):
+    #     if request.method =="POST":
+    #         objects = Administrations.objects.all()
+    #
+    #         recordsTotal = objects.count()
+    #         recordsFiltered = recordsTotal
+    #         start = int(request.POST['start'])
+    #         length = int(request.POST['length'])
+    #         draw = int(request.POST['draw'])
+    #         objects = objects[start:(start + length)]
+    #
+    #
