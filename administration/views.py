@@ -8,7 +8,7 @@ from rest_framework.views import APIView
 from .check import create_validate_code
 from django.http import HttpResponseRedirect
 from .models import DrugStock, DrugPurchase, DrugSale,Category
-from django.contrib.auth import authenticate
+from django.contrib.auth import authenticate,login
 from django.views.decorators.csrf import csrf_exempt
 from django.db.models import Q
 from .serializers import DrugStockListSerializer,CategorySerializer
@@ -35,22 +35,23 @@ def CheckCode(request):
 
 # 登陆
 @csrf_exempt
-def login(request):
+def userlogin(request):
     if request.method == 'POST':
-        username = request.POST.get('username')
-        pad = request.POST.get('pad')
-        request.session['username'] = request.POST.get('username', '')
-        user = authenticate(username=username, password=pad)
-        if user is not None:
-            check_code = request.POST.get('checkcode')
-            # 从session中获取验证码
-            session_code = request.session["CheckCode"]
-            if check_code.strip().lower() != session_code.lower():
-                return HttpResponse('验证码不匹配')
-            else:
-                return HttpResponseRedirect('/index/')
+        check_code = request.POST.get('checkcode')
+         # 从session中获取验证码
+        session_code = request.session["CheckCode"]
+        if check_code.strip().lower() != session_code.lower():
+            return HttpResponse('验证码不匹配')
         else:
-            return HttpResponse('用户名或密码不正确')
+            username = request.POST.get('username')
+            pad = request.POST.get('pad')
+            user = authenticate(username=username, password=pad)
+            if user is not None:
+                if user.is_active:
+                    login(request,user)
+                    return HttpResponseRedirect('/index/')
+            else:
+                return HttpResponse('用户名或密码不正确')
 
     return render_to_response('login.html')
 
@@ -65,11 +66,10 @@ def login(request):
 # 首页
 
 def index(request):
-    username = request.session['username']
     data = DrugStock.objects.all().order_by('-update_time')[:10]
     sale_data = DrugSale.objects.all().order_by('-update_time')[:10]
     purchase_data = DrugPurchase.objects.all().order_by('-update_time')[:10]
-    return render_to_response('index.html', {'datas': data, 'username': username, 'sale_data': sale_data,
+    return render(request,'index.html', {'datas': data,  'sale_data': sale_data,
                                              'storage_data': purchase_data})
 
 
