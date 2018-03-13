@@ -20,7 +20,7 @@ from django.contrib import admin
 from django.conf.urls.static import static
 from django.conf import settings
 from administration.views import userlogin, CheckCode, admins, index, stock_list, sale_list, purchase_list, \
-    DrugStockListView, sale_count, purchase_count,stock_count,DrugPurchaseListView,DrugSaleListView
+    DrugStockListView, sale_count, purchase_count,stock_count,DrugPurchaseListView,DrugSaleListView, userlogout,changepwd
 
 admin.site.site_header = u'农药追溯系统'
 
@@ -29,6 +29,8 @@ urlpatterns = [
     # url(r'^chaining/',include('smart_selects.urls')),
     url(r'^checkcode/$', CheckCode),
     url(r'^login/$',userlogin , name="drug-login"),
+    url(r'^logout/$', userlogout , name="drug-logout"),
+    url(r'^changepwd/$', changepwd , name="drug-changepwd"),
     url(r'^admins/$', admins),
     url(r'^index/$', index, name="drug-index"),
     url(r'^stock_list/$', stock_list, name="stock-list"),

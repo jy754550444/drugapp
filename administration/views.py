@@ -1,14 +1,17 @@
 # coding=utf-8
 # Create your views here.
 import json,datetime
+from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, render_to_response, HttpResponse
 import io
+from django.urls import reverse
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from .forms import ChangepwdForm
 from .check import create_validate_code
 from django.http import HttpResponseRedirect
 from .models import DrugStock, DrugPurchase, DrugSale,Category
-from django.contrib.auth import authenticate,login
+from django.contrib.auth import authenticate,login,logout
 from django.views.decorators.csrf import csrf_exempt
 from django.db.models import Q
 from .serializers import DrugStockListSerializer,DrugPurchaseListSerializer,DrugSaleListSerializer
@@ -41,7 +44,7 @@ def userlogin(request):
          # 从session中获取验证码
         session_code = request.session["CheckCode"]
         if check_code.strip().lower() != session_code.lower():
-            return HttpResponse('验证码不匹配')
+            return render(request,"login.html",{"errors":"验证码不匹配"})
         else:
             username = request.POST.get('username')
             pad = request.POST.get('pad')
@@ -49,22 +52,42 @@ def userlogin(request):
             if user is not None:
                 if user.is_active:
                     login(request,user)
-                    return HttpResponseRedirect('/index/')
+                    return HttpResponseRedirect(reverse("drug-index"))
             else:
-                return HttpResponse('用户名或密码不正确')
+                return render(request,"login.html",{"errors":"用户名或密码不正确"})
 
-    return render_to_response('login.html')
+    return render(request,'login.html')
 
 
-# from django.contrib.auth import logout as auth_logout
-# #用户退出
-# def logout(request):
-#     auth_logout(request)
-#     return render_to_response('login.html')
+#用户退出
+def userlogout(request):
+    logout(request)
+    return HttpResponseRedirect(reverse("drug-login"))
 
+@login_required(login_url="/login/")
+def changepwd(request):
+    if request.method == 'GET':
+        form = ChangepwdForm()
+        return render(request,'change_password.html', {"form":form})
+    else:
+        form = ChangepwdForm(request.POST)
+        if form.is_valid():
+            username = request.user.username
+            oldpassword = request.POST.get('oldpassword', '')
+            user = authenticate(username=username, password=oldpassword)
+            if user is not None and user.is_active:
+                password = request.POST.get('password', '')
+                user.set_password(password)
+                user.save()
+                return render(request,'change_password.html', {"changepwd_success":True})
+            else:
+                return render(request,'change_password.html',  {'form': form, 'oldpassword_is_wrong': True})
+        else:
+            return render('change_password.html',  {'form': form})
+    return render(request,"change_password.html")
 
 # 首页
-
+@login_required(login_url="/login/")
 def index(request):
     data = DrugStock.objects.all().order_by('-update_time')[:10]
     sale_data = DrugSale.objects.all().order_by('-update_time')[:10]
