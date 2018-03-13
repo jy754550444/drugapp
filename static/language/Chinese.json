@@ -1,24 +1,24 @@
 {
-    "sProcessing":   "╢╕юМжп...",
-    "sLengthMenu":   "отй╬ _MENU_ оН╫А╧Ш",
-    "sZeroRecords":  "ц╩спф╔еД╫А╧Ш",
-    "sInfo":         "отй╬╣з _START_ жа _END_ оН╫А╧Шё╛╧╡ _TOTAL_ оН",
-    "sInfoEmpty":    "отй╬╣з 0 жа 0 оН╫А╧Шё╛╧╡ 0 оН",
-    "sInfoFiltered": "(си _MAX_ оН╫А╧Ш╧Щбк)",
+    "sProcessing":   "Е╓└Г░├Д╦╜...",
+    "sLengthMenu":   "Ф≤╬Г╓╨ _MENU_ И║╧Г╩⌠Ф·°",
+    "sZeroRecords":  "Ф╡║Ф°┴Е▄╧И┘█Г╩⌠Ф·°",
+    "sInfo":         "Ф≤╬Г╓╨Г╛╛ _START_ Х┤Ё _END_ И║╧Г╩⌠Ф·°О╪▄Е┘╠ _TOTAL_ И║╧",
+    "sInfoEmpty":    "Ф≤╬Г╓╨Г╛╛ 0 Х┤Ё 0 И║╧Г╩⌠Ф·°О╪▄Е┘╠ 0 И║╧",
+    "sInfoFiltered": "(Г■╠ _MAX_ И║╧Г╩⌠Ф·°Х©┤Ф╩╓)",
     "sInfoPostFix":  "",
-    "sSearch":       "кякВ:",
+    "sSearch":       "Ф░°Г╢╒:",
     "sUrl":          "",
-    "sEmptyTable":     "╠МжпйЩ╬щн╙©у",
-    "sLoadingRecords": "тьхКжп...",
+    "sEmptyTable":     "Х║╗Д╦╜Ф∙╟Ф█╝Д╦╨Г╘╨",
+    "sLoadingRecords": "Х╫╫Е┘╔Д╦╜...",
     "sInfoThousands":  ",",
     "oPaginate": {
-        "sFirst":    "йврЁ",
-        "sPrevious": "иорЁ",
-        "sNext":     "обрЁ",
-        "sLast":     "д╘рЁ"
+        "sFirst":    "И╕√И║╣",
+        "sPrevious": "Д╦┼И║╣",
+        "sNext":     "Д╦▀И║╣",
+        "sLast":     "Ф°╚И║╣"
     },
     "oAria": {
-        "sSortAscending":  ": ртиЩпРееап╢кап",
-        "sSortDescending": ": рт╫╣пРееап╢кап"
+        "sSortAscending":  ": Д╩╔Е█┤Е╨▐Ф▌▓Е┬≈Ф╜╓Е┬≈",
+        "sSortDescending": ": Д╩╔И≥█Е╨▐Ф▌▓Е┬≈Ф╜╓Е┬≈"
     }
 }
