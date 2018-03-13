@@ -22,9 +22,9 @@ from django.conf import settings
 from administration.views import login, CheckCode, admins, index, stock_list, sale_list, purchase_list, \
     DrugStockListView, sale_count, purchase_count,stock_count
 
-admin.site.site_header = u'农药追溯系统'
+     # DrugPurchaseListView,DrugSaleListView
 
-admin.site.site_title = u'农药追溯系统'
+admin.site.site_header = u'农药追溯系统'
 
 urlpatterns = [
     url(r'^admin/', admin.site.urls),

@@ -101,8 +101,6 @@ class DrugSaleAdmin(admin.ModelAdmin):
         if ds.stock_count > obj.sale_count:
             ds.stock_count = ds.stock_count - obj.sale_count
             ds.save()
-            re = super(DrugSaleAdmin,self).save_model(request, obj, form, change)
-            return re
 
         obj.input_owner = request.user
         userobj = request.user

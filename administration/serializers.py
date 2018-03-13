@@ -45,7 +45,7 @@ class UnitSerializer(ModelSerializer):
 class DrugStockListSerializer(ModelSerializer):
     category = serializers.CharField(source='category.name',read_only=True)
     units = serializers.CharField(source='unit.name',read_only=True)
-    group_name = serializers.CharField(source='group.name',read_only=True)
+    group_name = serializers.CharField(source='group.name', read_only=True)
 
     class Meta:
         model = DrugStock
@@ -59,4 +59,50 @@ class DrugStockListSerializer(ModelSerializer):
             'register_code',
             'group_name',
             'stock_count',
+        ]
+
+
+
+class DrugPurchaseListSerializer(ModelSerializer):
+    drugname = serializers.CharField(source='drugs_name.name',read_only=True)
+    category = serializers.CharField(source='drugs_name.category.name',read_only=True)
+    units = serializers.CharField(source='unit.name',read_only=True)
+    group_name = serializers.CharField(source='group.name',read_only=True)
+
+    class Meta:
+        model = DrugPurchase
+        fields = [
+            'drugname',
+            'category',
+            'units',
+            'model',
+            'manufacturer',
+            'update_time',  #采购时间
+            'register_code',
+            'group_name',
+            'purchase_count',
+
+        ]
+
+
+class DrugSaleListSerializer(ModelSerializer):
+    drugname = serializers.CharField(source='drugs_name.name', read_only=True)
+    category = serializers.CharField(source='drugs_name.category.name', read_only=True)
+    units = serializers.CharField(source='unit.name', read_only=True)
+    group_name = serializers.CharField(source='group.name', read_only=True)
+
+    class Meta:
+        model = DrugSale
+        fields = [
+            'drugname',
+            'category',
+            'units',
+            'model',
+            'manufacturer',
+            'update_time',  #销售时间
+            'register_code',
+            'group_name',
+            'sale_count',
+            'customer_name',
+            'customer_tel'
         ]
