@@ -185,7 +185,7 @@ class DrugStockListView(APIView):
     #
 
 
-# 销售统计
+# 销售日统计
 def sale_count(request):
     limit = 0
     limit1 = 0
@@ -196,28 +196,26 @@ def sale_count(request):
     username = request.session['username']
     time_now = datetime.datetime.now().strftime("%Y-%m-%d", )
     time_now1 = (datetime.datetime.now() + datetime.timedelta(days=1)).strftime('%Y-%m-%d')
-    time_now2 = (datetime.datetime.now() + datetime.timedelta(days=2)).strftime("%Y-%m-%d", )
-    time_now3 = (datetime.datetime.now() + datetime.timedelta(days=3)).strftime("%Y-%m-%d", )
-    time_now4 = (datetime.datetime.now() + datetime.timedelta(days=4)).strftime("%Y-%m-%d", )
-    time_now5 = (datetime.datetime.now() + datetime.timedelta(days=5)).strftime("%Y-%m-%d", )
-    datas = DrugSale.objects.filter(create_time__contains=time_now)
-    for i in datas:
-        limit += i.sale_count
-    datas1 = DrugSale.objects.filter(create_time__contains=time_now1)
-    for i in datas1:
-        limit1 += i.sale_count
-    datas2 = DrugSale.objects.filter(create_time__contains=time_now2)
-    for i in datas2:
-        limit2 += i.sale_count
-    datas3 = DrugSale.objects.filter(create_time__contains=time_now3)
-    for i in datas3:
-        limit3 += i.sale_count
-    datas4 = DrugSale.objects.filter(create_time__contains=time_now4)
-    for i in datas4:
-        limit4 += i.sale_count
-    datas5 = DrugSale.objects.filter(create_time__contains=time_now5)
-    for i in datas5:
-        limit5 += i.sale_count
+    time_now2 = (datetime.datetime.now() + datetime.timedelta(days=2)).strftime("%Y-%m-%d",)
+    time_now3 = (datetime.datetime.now() + datetime.timedelta(days=3)).strftime("%Y-%m-%d",)
+    time_now4 = (datetime.datetime.now() + datetime.timedelta(days=4)).strftime("%Y-%m-%d",)
+    time_now5 = (datetime.datetime.now() + datetime.timedelta(days=5)).strftime("%Y-%m-%d",)
+    que_list=[time_now,time_now1,time_now2,time_now3,time_now4,time_now5]
+    for i in que_list:
+        datas = DrugSale.objects.filter(create_time__contains=i)
+        for a in datas:
+            if a.create_time.strftime("%Y-%m-%d",) == time_now:
+                limit += a.sale_count
+            if a.create_time.strftime("%Y-%m-%d",) == time_now1:
+                limit1 += a.sale_count
+            if a.create_time.strftime("%Y-%m-%d",) == time_now2:
+                limit2 += a.sale_count
+            if a.create_time.strftime("%Y-%m-%d",) == time_now3:
+                limit3 += a.sale_count
+            if a.create_time.strftime("%Y-%m-%d",) == time_now4:
+                limit4 += a.sale_count
+            if a.create_time.strftime("%Y-%m-%d",) == time_now5:
+                limit5 += a.sale_count
     return render_to_response('sale_count.html',
                               {'username': username, 'time_now': time_now, 'time_now1':time_now1,
                                'time_now2': time_now2, 'time_now3': time_now3, 'time_now4': time_now4,
@@ -236,30 +234,28 @@ def purchase_count(request):
     limit4 = 0
     limit5 = 0
     username = request.session['username']
-    time_now = datetime.datetime.now().strftime("%Y-%m-%d", )
+    time_now = datetime.datetime.now().strftime("%Y-%m-%d",)
     time_now1 = (datetime.datetime.now() + datetime.timedelta(days=1)).strftime('%Y-%m-%d')
     time_now2 = (datetime.datetime.now() + datetime.timedelta(days=2)).strftime("%Y-%m-%d", )
     time_now3 = (datetime.datetime.now() + datetime.timedelta(days=3)).strftime("%Y-%m-%d", )
     time_now4 = (datetime.datetime.now() + datetime.timedelta(days=4)).strftime("%Y-%m-%d", )
     time_now5 = (datetime.datetime.now() + datetime.timedelta(days=5)).strftime("%Y-%m-%d", )
-    datas = DrugPurchase.objects.filter(create_time__contains=time_now)
-    for i in datas:
-        limit += i.sale_count
-    datas1 = DrugPurchase.objects.filter(create_time__contains=time_now1)
-    for i in datas1:
-        limit1 += i.sale_count
-    datas2 = DrugPurchase.objects.filter(create_time__contains=time_now2)
-    for i in datas2:
-        limit2 += i.sale_count
-    datas3 = DrugPurchase.objects.filter(create_time__contains=time_now3)
-    for i in datas3:
-        limit3 += i.sale_count
-    datas4 = DrugPurchase.objects.filter(create_time__contains=time_now4)
-    for i in datas4:
-        limit4 += i.sale_count
-    datas5 = DrugPurchase.objects.filter(create_time__contains=time_now5)
-    for i in datas5:
-        limit5 += i.sale_count
+    que_list=[time_now,time_now1,time_now2,time_now3,time_now4,time_now5]
+    for i in que_list:
+        datas = DrugPurchase.objects.filter(create_time__contains=i)
+        for a in datas:
+            if a.create_time.strftime("%Y-%m-%d",) == time_now:
+                limit += a.purchase_count
+            if a.create_time.strftime("%Y-%m-%d",) == time_now1:
+                limit1 += a.purchase_count
+            if a.create_time.strftime("%Y-%m-%d",) == time_now2:
+                limit2 += a.purchase_count
+            if a.create_time.strftime("%Y-%m-%d",) == time_now3:
+                limit3 += a.purchase_count
+            if a.create_time.strftime("%Y-%m-%d",) == time_now4:
+                limit4 += a.purchase_count
+            if a.create_time.strftime("%Y-%m-%d",) == time_now5:
+                limit5 += a.purchase_count
     return render_to_response('purchase_count.html',
                               {'username': username, 'time_now': time_now, 'time_now1':time_now1,
                                'time_now2': time_now2, 'time_now3': time_now3, 'time_now4': time_now4,
@@ -282,24 +278,22 @@ def stock_count(request):
     time_now3 = (datetime.datetime.now() + datetime.timedelta(days=3)).strftime("%Y-%m-%d", )
     time_now4 = (datetime.datetime.now() + datetime.timedelta(days=4)).strftime("%Y-%m-%d", )
     time_now5 = (datetime.datetime.now() + datetime.timedelta(days=5)).strftime("%Y-%m-%d", )
-    datas = DrugStock.objects.filter(create_time__contains=time_now)
-    for i in datas:
-        limit += i.stock_count
-    datas1 = DrugStock.objects.filter(create_time__contains=time_now1)
-    for i in datas1:
-        limit1 += i.stock_count
-    datas2 = DrugStock.objects.filter(create_time__contains=time_now2)
-    for i in datas2:
-        limit2 += i.stock_count
-    datas3 = DrugStock.objects.filter(create_time__contains=time_now3)
-    for i in datas3:
-        limit3 += i.stock_count
-    datas4 = DrugStock.objects.filter(create_time__contains=time_now4)
-    for i in datas4:
-        limit4 += i.stock_count
-    datas5 = DrugStock.objects.filter(create_time__contains=time_now5)
-    for i in datas5:
-        limit5 += i.stock_count
+    que_list=[time_now,time_now1,time_now2,time_now3,time_now4,time_now5]
+    for i in que_list:
+        datas = DrugStock.objects.filter(create_time__contains=i)
+        for a in datas:
+            if a.create_time.strftime("%Y-%m-%d",) == time_now:
+                limit += a.stock_count
+            if a.create_time.strftime("%Y-%m-%d",) == time_now1:
+                limit1 += a.stock_count
+            if a.create_time.strftime("%Y-%m-%d",) == time_now2:
+                limit2 += a.stock_count
+            if a.create_time.strftime("%Y-%m-%d",) == time_now3:
+                limit3 += a.stock_count
+            if a.create_time.strftime("%Y-%m-%d",) == time_now4:
+                limit4 += a.stock_count
+            if a.create_time.strftime("%Y-%m-%d",) == time_now5:
+                limit5 += a.stock_count
     return render_to_response('stock_count.html',
                               {'username': username, 'time_now': time_now, 'time_now1':time_now1,
                                'time_now2': time_now2, 'time_now3': time_now3, 'time_now4': time_now4,

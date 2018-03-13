@@ -19,10 +19,8 @@ from django.conf.urls import url, include
 from django.contrib import admin
 from django.conf.urls.static import static
 from django.conf import settings
-from administration.views import login, CheckCode, admins, index, stock_list, sale_list, purchase_list, \
-    DrugStockListView, sale_count, purchase_count,stock_count
-
-     # DrugPurchaseListView,DrugSaleListView
+from administration.views import userlogin, CheckCode, admins, index, stock_list, sale_list, purchase_list, \
+    DrugStockListView, sale_count, purchase_count,stock_count,DrugPurchaseListView,DrugSaleListView
 
 admin.site.site_header = u'农药追溯系统'
 
@@ -30,7 +28,7 @@ urlpatterns = [
     url(r'^admin/', admin.site.urls),
     # url(r'^chaining/',include('smart_selects.urls')),
     url(r'^checkcode/$', CheckCode),
-    url(r'^login/$', login, name="drug-login"),
+    url(r'^login/$',userlogin , name="drug-login"),
     url(r'^admins/$', admins),
     url(r'^index/$', index, name="drug-index"),
     url(r'^stock_list/$', stock_list, name="stock-list"),
@@ -40,6 +38,8 @@ urlpatterns = [
     url(r'^stock_count/$', stock_count, name="stock-count"),
     url(r'^purchase_list/$', purchase_list, name="purchase-list"),
     url(r'^api_stocklist/$', DrugStockListView.as_view(), name="api-stocklist"),
+    url(r'^api_purchaselist/$', DrugPurchaseListView.as_view(), name="api-purchaselist"),
+    url(r'^api_salelist/$', DrugSaleListView.as_view(), name="api-salelist"),
     # url(r'^jet/', include('jet.urls', 'jet')),  # Django JET URLS
     # url(r'^jet/dashboard/', include('jet.dashboard.urls', 'jet-dashboard')),  # Django JET dashboard URLSc
 ]
