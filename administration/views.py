@@ -83,7 +83,7 @@ def changepwd(request):
             else:
                 return render(request,'change_password.html',  {'form': form, 'oldpassword_is_wrong': True})
         else:
-            return render('change_password.html',  {'form': form})
+            return render(request,'change_password.html',  {'form': form})
     return render(request,"change_password.html")
 
 # 首页

@@ -1,4 +1,4 @@
-#-*-coding:utf-8-*-
+# coding=utf-8
 from django import forms
 
 __author__ = 'malxin'
@@ -7,44 +7,47 @@ __author__ = 'malxin'
 class ChangepwdForm(forms.Form):
     oldpassword = forms.CharField(
         required=True,
-        label=u"Ô­ÃÜÂë",
-        error_messages={'required': u'ÇëÊäÈëÔ­ÃÜÂë'},
+        label=u"åŸå¯†ç ",
+        error_messages={'required': u'è¯·è¾“å…¥åŸå¯†ç '},
         widget=forms.PasswordInput(
             attrs={
-                'placeholder': u"Ô­ÃÜÂë",
+                'placeholder': u"åŸå¯†ç ",
                 'rows': 1,
+                'class':'form-control'
             }
         ),
     )
     password = forms.CharField(
         required=True,
-        label=u"ĞÂÃÜÂë",
-        error_messages={'required': u'ÇëÊäÈëĞÂÃÜÂë'},
+        label=u"æ–°å¯†ç ",
+        error_messages={'required': u'è¯·è¾“å…¥æ–°å¯†ç '},
         widget=forms.PasswordInput(
             attrs={
-                'placeholder': u"ĞÂÃÜÂë",
+                'placeholder': u"æ–°å¯†ç ",
                 'rows': 1,
+                'class':'form-control'
             }
         ),
     )
 
     password1 = forms.CharField(
         required=True,
-        label=u"È·ÈÏÃÜÂë",
-        error_messages={'required': u'ÇëÔÙ´ÎÊäÈëĞÂÃÜÂë'},
+        label=u"ç¡®è®¤å¯†ç ",
+        error_messages={'required': u'è¯·å†æ¬¡è¾“å…¥æ–°å¯†ç '},
         widget=forms.PasswordInput(
             attrs={
-                'placeholder': u"È·ÈÏÃÜÂë",
+                'placeholder': u"ç¡®è®¤å¯†ç ",
                 'rows': 1,
+                'class':'form-control'
             }
         ),
     )
 
     def clean(self):
         if not self.is_valid():
-            raise forms.ValidationError(u"ËùÓĞÏî¶¼Îª±ØÌîÏî")
+            raise forms.ValidationError(u"æ‰€æœ‰é¡¹éƒ½ä¸ºå¿…å¡«é¡¹")
         elif self.cleaned_data['password'] != self.cleaned_data['password1']:
-            raise forms.ValidationError(u"Á½´ÎÊäÈëµÄĞÂÃÜÂë²»Ò»Ñù")
+            raise forms.ValidationError(u"ä¸¤æ¬¡è¾“å…¥çš„æ–°å¯†ç ä¸ä¸€æ ·")
         else:
             cleaned_data = super(ChangepwdForm, self).clean()
         return cleaned_data
