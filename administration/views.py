@@ -97,6 +97,7 @@ def index(request):
 
 
 #库存查询列表
+@login_required(login_url="/login/")
 def stock_list(request):
     context = {
         "categorys": Category.objects.all()
@@ -105,6 +106,7 @@ def stock_list(request):
 
 
 #采购查询列表
+@login_required(login_url="/login/")
 def purchase_list(request):
     context = {
         "categorys": Category.objects.all()
@@ -113,6 +115,7 @@ def purchase_list(request):
 
 
 #销售查询列表
+@login_required(login_url="/login/")
 def sale_list(request):
     context = {
         "categorys": Category.objects.all()
@@ -121,10 +124,8 @@ def sale_list(request):
 
 
 
-
-
-
 #库存查询列表
+
 class DrugStockListView(APIView):
 
     def get(self, request, format=None):

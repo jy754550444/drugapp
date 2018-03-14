@@ -44,10 +44,13 @@ class ChangepwdForm(forms.Form):
     )
 
     def clean(self):
+        super().clean()
         if not self.is_valid():
+            print("form errors")
             raise forms.ValidationError(u"所有项都为必填项")
         elif self.cleaned_data['password'] != self.cleaned_data['password1']:
-            raise forms.ValidationError(u"两次输入的新密码不一样")
+            print("password errors")
+            raise forms.ValidationError(u"两次输入的新密码不一样",code="pwd")
         else:
             cleaned_data = super(ChangepwdForm, self).clean()
         return cleaned_data
