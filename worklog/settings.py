@@ -87,7 +87,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'pesticides',
         'USER':'root',
-        'PASSWORD':'123456',
+        'PASSWORD':'',
         'HOST':'localhost',
         'PORT':'3306',
         'OPTIONS':{
@@ -137,7 +137,7 @@ TIME_FORMAT = 'H:i'
 # https://docs.djangoproject.com/en/1.10/howto/static-files/
 
 STATIC_URL = '/static/'
-# STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+STATIC_ROOT = os.path.join(BASE_DIR, 'common_static')
 
 # STATICFILES_DIRS=(
 #     os.path.join(BASE_DIR,"static"),
@@ -145,7 +145,7 @@ STATIC_URL = '/static/'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR,'media')
 
-
+#
 STATICFILES_DIRS = (
     # ("css", os.path.join(STATIC_ROOT, 'css')),
     # ("js", os.path.join(STATIC_ROOT, 'js')),

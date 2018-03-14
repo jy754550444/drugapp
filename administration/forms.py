@@ -1,5 +1,6 @@
 # coding=utf-8
 from django import forms
+from django.contrib.admin import widgets
 
 __author__ = 'malxin'
 
@@ -42,6 +43,16 @@ class ChangepwdForm(forms.Form):
             }
         ),
     )
+
+    # create_at = forms.DateTimeField(widget=widgets.AdminDateWidget(), label=u'时间')
+    # create_at = forms.DateField(
+    #     widget=forms.DateTimeInput(
+    #         attrs={
+    #             'type': 'date',
+    #             'class':'form-control'
+    #         }
+    #     ),
+    # )
 
     def clean(self):
         super().clean()
