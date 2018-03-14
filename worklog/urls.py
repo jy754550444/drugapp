@@ -20,7 +20,7 @@ from django.contrib import admin
 from django.conf.urls.static import static
 from django.conf import settings
 from administration.views import userlogin, CheckCode, admins, index, stock_list, sale_list, purchase_list, \
-    DrugStockListView, sale_count, purchase_count,stock_count,DrugPurchaseListView,DrugSaleListView
+    DrugStockListView, sale_count_day, purchase_count,stock_count,DrugPurchaseListView,DrugSaleListView,sale_count_month
 
 admin.site.site_header = u'农药追溯系统'
 
@@ -32,10 +32,11 @@ urlpatterns = [
     url(r'^admins/$', admins),
     url(r'^index/$', index, name="drug-index"),
     url(r'^stock_list/$', stock_list, name="stock-list"),
-    url(r'^sale_count/$', sale_count, name="sale-count"),
+    url(r'^sale_count_day/$', sale_count_day, name="sale-count-day"),
     url(r'^sale_list/$', sale_list, name="sale-list"),
     url(r'^purchase_count/$', purchase_count, name="purchase-count"),
     url(r'^stock_count/$', stock_count, name="stock-count"),
+    url(r'^sale_count_month/$', sale_count_month, name="sale-count-month"),
     url(r'^purchase_list/$', purchase_list, name="purchase-list"),
     url(r'^api_stocklist/$', DrugStockListView.as_view(), name="api-stocklist"),
     url(r'^api_purchaselist/$', DrugPurchaseListView.as_view(), name="api-purchaselist"),

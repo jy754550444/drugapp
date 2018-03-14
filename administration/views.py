@@ -1,24 +1,27 @@
 # coding=utf-8
 # Create your views here.
-import json,datetime
+import json, datetime
 from django.shortcuts import render, render_to_response, HttpResponse
 import io
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from .check import create_validate_code
 from django.http import HttpResponseRedirect
-from .models import DrugStock, DrugPurchase, DrugSale,Category
-from django.contrib.auth import authenticate,login
+from .models import DrugStock, DrugPurchase, DrugSale, Category
+from django.contrib.auth import authenticate, login
 from django.views.decorators.csrf import csrf_exempt
 from django.db.models import Q
-from .serializers import DrugStockListSerializer,DrugPurchaseListSerializer,DrugSaleListSerializer
+from .serializers import DrugStockListSerializer, DrugPurchaseListSerializer, DrugSaleListSerializer
+
 
 # 后台自动获取数据ajax
 def admins(request):
     id = request.GET.get('drugid')
     all_data = DrugStock.objects.get(id=id)
-    retValue = {'model': all_data.model,'unit':all_data.unit.id, 'manufacturer': all_data.manufacturer, 'register_code': all_data.register_code}
+    retValue = {'model': all_data.model, 'unit': all_data.unit.id, 'manufacturer': all_data.manufacturer,
+                'register_code': all_data.register_code}
     return HttpResponse(json.dumps(retValue), content_type="application/json")
+
 
 # 获取验证码
 def CheckCode(request):
@@ -38,17 +41,19 @@ def CheckCode(request):
 def userlogin(request):
     if request.method == 'POST':
         check_code = request.POST.get('checkcode')
-         # 从session中获取验证码
+        # 从session中获取验证码
         session_code = request.session["CheckCode"]
         if check_code.strip().lower() != session_code.lower():
             return HttpResponse('验证码不匹配')
         else:
             username = request.POST.get('username')
+            request.session['username'] =request.POST.get('username')
             pad = request.POST.get('pad')
+
             user = authenticate(username=username, password=pad)
             if user is not None:
                 if user.is_active:
-                    login(request,user)
+                    login(request, user)
                     return HttpResponseRedirect('/index/')
             else:
                 return HttpResponse('用户名或密码不正确')
@@ -64,16 +69,35 @@ def userlogin(request):
 
 
 # 首页
-
 def index(request):
+    limit_day = 0
+    limit_month = 0
+    limit_day_purchase = 0
+    limit_month_purchase = 0
+    now = datetime.datetime.now().strftime("%Y-%m-%d", )
+    now_month = datetime.datetime.now()
+    datas = DrugSale.objects.filter(create_time__contains=now)
+    for i in datas:
+        limit_day += i.sale_count
+    datas_moth = DrugSale.objects.filter(create_time__month=now_month.month)
+    for a in datas_moth:
+        limit_month += a.sale_count
+    datas_purchase = DrugPurchase.objects.filter(create_time__contains=now)
+    for q in datas_purchase:
+        limit_day_purchase += q.purchase_count
+    datas_moth_purchase = DrugPurchase.objects.filter(create_time__month=now_month.month)
+    for w in datas_moth_purchase:
+        limit_month_purchase += w.purchase_count
     data = DrugStock.objects.all().order_by('-update_time')[:10]
     sale_data = DrugSale.objects.all().order_by('-update_time')[:10]
     purchase_data = DrugPurchase.objects.all().order_by('-update_time')[:10]
-    return render(request,'index.html', {'datas': data,  'sale_data': sale_data,
-                                             'storage_data': purchase_data})
+    return render(request, 'index.html', {'datas': data, 'sale_data': sale_data, 'limit_month': limit_month,
+                                          'storage_data': purchase_data, 'limit_day': limit_day,
+                                          'limit_day_purchase': limit_day_purchase,
+                                          'limit_month_purchase': limit_month_purchase})
 
 
-#库存查询列表
+# 库存查询列表
 def stock_list(request):
     context = {
         "categorys": Category.objects.all()
@@ -81,7 +105,7 @@ def stock_list(request):
     return render(request, 'stock_list.html', context)
 
 
-#采购查询列表
+# 采购查询列表
 def purchase_list(request):
     context = {
         "categorys": Category.objects.all()
@@ -89,7 +113,7 @@ def purchase_list(request):
     return render(request, 'storage_list.html', context)
 
 
-#销售查询列表
+# 销售查询列表
 def sale_list(request):
     context = {
         "categorys": Category.objects.all()
@@ -97,24 +121,19 @@ def sale_list(request):
     return render(request, 'sale_list.html', context)
 
 
-
-
-
-
-#库存查询列表
+# 库存查询列表
 class DrugStockListView(APIView):
-
     def get(self, request, format=None):
         catid = request.GET.get("catid")
         start = int(request.GET.get('start', '0'))
         length = int(request.GET.get('length', '0'))
         draw = int(request.GET.get('draw', '0'))
 
-        columnList = ('name', 'category', 'unit', 'model', 'manufacturer', 'register_code','group','stock_count')
-        #排序
+        columnList = ('name', 'category', 'unit', 'model', 'manufacturer', 'register_code', 'group', 'stock_count')
+        # 排序
         order_column = request.GET.get("order[0][column]")
 
-        #asc desc 升序或者降序
+        # asc desc 升序或者降序
         order_dir = request.GET.get('order[0][dir]')
         if order_column:
             ordercol = columnList[int(order_column)]
@@ -125,10 +144,10 @@ class DrugStockListView(APIView):
             queryset_list = DrugStock.objects.all()
 
         recordsTotal = queryset_list.count()
-        #搜索
+        # 搜索
         search = request.GET.get("search[value]")
 
-        #类型（首先判断有子类）
+        # 类型（首先判断有子类）
         if catid and int(catid) > 0:
 
             parents = Category.objects.get(id=catid)
@@ -159,7 +178,7 @@ class DrugStockListView(APIView):
         if start >= 0 and length > 0:
             queryset_list = queryset_list[start:(start + length)]
 
-        serializer = DrugStockListSerializer(queryset_list,many=True)
+        serializer = DrugStockListSerializer(queryset_list, many=True)
 
         resp = {
             'draw': draw,
@@ -171,22 +190,22 @@ class DrugStockListView(APIView):
         return Response(resp)
 
 
-    # def post(self,request,format=None):
-    #     if request.method =="POST":
-    #         objects = Administrations.objects.all()
-    #
-    #         recordsTotal = objects.count()
-    #         recordsFiltered = recordsTotal
-    #         start = int(request.POST['start'])
-    #         length = int(request.POST['length'])
-    #         draw = int(request.POST['draw'])
-    #         objects = objects[start:(start + length)]
-    #
-    #
+        # def post(self,request,format=None):
+        #     if request.method =="POST":
+        #         objects = Administrations.objects.all()
+        #
+        #         recordsTotal = objects.count()
+        #         recordsFiltered = recordsTotal
+        #         start = int(request.POST['start'])
+        #         length = int(request.POST['length'])
+        #         draw = int(request.POST['draw'])
+        #         objects = objects[start:(start + length)]
+        #
+        #
 
 
 # 销售日统计
-def sale_count(request):
+def sale_count_day(request):
     limit = 0
     limit1 = 0
     limit2 = 0
@@ -196,33 +215,81 @@ def sale_count(request):
     username = request.session['username']
     time_now = datetime.datetime.now().strftime("%Y-%m-%d", )
     time_now1 = (datetime.datetime.now() + datetime.timedelta(days=1)).strftime('%Y-%m-%d')
-    time_now2 = (datetime.datetime.now() + datetime.timedelta(days=2)).strftime("%Y-%m-%d",)
-    time_now3 = (datetime.datetime.now() + datetime.timedelta(days=3)).strftime("%Y-%m-%d",)
-    time_now4 = (datetime.datetime.now() + datetime.timedelta(days=4)).strftime("%Y-%m-%d",)
-    time_now5 = (datetime.datetime.now() + datetime.timedelta(days=5)).strftime("%Y-%m-%d",)
-    que_list=[time_now,time_now1,time_now2,time_now3,time_now4,time_now5]
+    time_now2 = (datetime.datetime.now() + datetime.timedelta(days=2)).strftime("%Y-%m-%d", )
+    time_now3 = (datetime.datetime.now() + datetime.timedelta(days=3)).strftime("%Y-%m-%d", )
+    time_now4 = (datetime.datetime.now() + datetime.timedelta(days=4)).strftime("%Y-%m-%d", )
+    time_now5 = (datetime.datetime.now() + datetime.timedelta(days=5)).strftime("%Y-%m-%d", )
+    que_list = [time_now, time_now1, time_now2, time_now3, time_now4, time_now5]
     for i in que_list:
         datas = DrugSale.objects.filter(create_time__contains=i)
         for a in datas:
-            if a.create_time.strftime("%Y-%m-%d",) == time_now:
+            if a.create_time.strftime("%Y-%m-%d", ) == time_now:
                 limit += a.sale_count
-            if a.create_time.strftime("%Y-%m-%d",) == time_now1:
+            if a.create_time.strftime("%Y-%m-%d", ) == time_now1:
                 limit1 += a.sale_count
-            if a.create_time.strftime("%Y-%m-%d",) == time_now2:
+            if a.create_time.strftime("%Y-%m-%d", ) == time_now2:
                 limit2 += a.sale_count
-            if a.create_time.strftime("%Y-%m-%d",) == time_now3:
+            if a.create_time.strftime("%Y-%m-%d", ) == time_now3:
                 limit3 += a.sale_count
-            if a.create_time.strftime("%Y-%m-%d",) == time_now4:
+            if a.create_time.strftime("%Y-%m-%d", ) == time_now4:
                 limit4 += a.sale_count
-            if a.create_time.strftime("%Y-%m-%d",) == time_now5:
+            if a.create_time.strftime("%Y-%m-%d", ) == time_now5:
                 limit5 += a.sale_count
     return render_to_response('sale_count.html',
-                              {'username': username, 'time_now': time_now, 'time_now1':time_now1,
+                              {'username': username, 'time_now': time_now, 'time_now1': time_now1,
                                'time_now2': time_now2, 'time_now3': time_now3, 'time_now4': time_now4,
                                'time_now5': time_now5, 'limti': limit, 'limit1': limit1, 'limit2': limit2,
                                'limit3': limit3, 'limit4': limit4, 'limit5': limit5}, )
 
 
+# 销售月统计
+def sale_count_month(request):
+    limit = 0
+    limit1 = 0
+    limit2 = 0
+    limit3 = 0
+    limit4 = 0
+    limit5 = 0
+    limit6 = 0
+    limit7 = 0
+    limit8 = 0
+    limit9 = 0
+    limit10 = 0
+    limit11 = 0
+    username = request.session['username']
+    que_list = ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12']
+    for i in que_list:
+        datas = DrugSale.objects.filter(create_time__month=i)
+        for a in datas:
+            if a.create_time.strftime("%m", ) == '01':
+                limit += a.sale_count
+            if a.create_time.strftime("%m") == '02':
+                limit1 += a.sale_count
+            if a.create_time.strftime("%m", ) == '03':
+                limit2 += a.sale_count
+            if a.create_time.strftime("%m", ) == '04':
+                limit3 += a.sale_count
+            if a.create_time.strftime("%m", ) == '05':
+                limit4 += a.sale_count
+            if a.create_time.strftime("%m", ) == '06':
+                limit5 += a.sale_count
+            if a.create_time.strftime("%m", ) == '07':
+                limit6 += a.sale_count
+            if a.create_time.strftime("%m") == '08':
+                limit7 += a.sale_count
+            if a.create_time.strftime("%m", ) == '09':
+                limit8 += a.sale_count
+            if a.create_time.strftime("%m", ) == '10':
+                limit9 += a.sale_count
+            if a.create_time.strftime("%m", ) == '11':
+                limit10 += a.sale_count
+            if a.create_time.strftime("%m", ) == '12':
+                limit11 += a.sale_count
+    return render_to_response('sale_count_month.html',
+                              {'username': username, 'limti': limit, 'limit1': limit1, 'limit2': limit2,
+                               'limit3': limit3, 'limit4': limit4, 'limit5': limit5, 'limti6': limit6, 'limit7': limit7,
+                               'limit8': limit8,
+                               'limit9': limit9, 'limit10': limit10, 'limit11': limit11}, )
 
 
 # 采购统计
@@ -234,30 +301,30 @@ def purchase_count(request):
     limit4 = 0
     limit5 = 0
     username = request.session['username']
-    time_now = datetime.datetime.now().strftime("%Y-%m-%d",)
+    time_now = datetime.datetime.now().strftime("%Y-%m-%d", )
     time_now1 = (datetime.datetime.now() + datetime.timedelta(days=1)).strftime('%Y-%m-%d')
     time_now2 = (datetime.datetime.now() + datetime.timedelta(days=2)).strftime("%Y-%m-%d", )
     time_now3 = (datetime.datetime.now() + datetime.timedelta(days=3)).strftime("%Y-%m-%d", )
     time_now4 = (datetime.datetime.now() + datetime.timedelta(days=4)).strftime("%Y-%m-%d", )
     time_now5 = (datetime.datetime.now() + datetime.timedelta(days=5)).strftime("%Y-%m-%d", )
-    que_list=[time_now,time_now1,time_now2,time_now3,time_now4,time_now5]
+    que_list = [time_now, time_now1, time_now2, time_now3, time_now4, time_now5]
     for i in que_list:
         datas = DrugPurchase.objects.filter(create_time__contains=i)
         for a in datas:
-            if a.create_time.strftime("%Y-%m-%d",) == time_now:
+            if a.create_time.strftime("%Y-%m-%d", ) == time_now:
                 limit += a.purchase_count
-            if a.create_time.strftime("%Y-%m-%d",) == time_now1:
+            if a.create_time.strftime("%Y-%m-%d", ) == time_now1:
                 limit1 += a.purchase_count
-            if a.create_time.strftime("%Y-%m-%d",) == time_now2:
+            if a.create_time.strftime("%Y-%m-%d", ) == time_now2:
                 limit2 += a.purchase_count
-            if a.create_time.strftime("%Y-%m-%d",) == time_now3:
+            if a.create_time.strftime("%Y-%m-%d", ) == time_now3:
                 limit3 += a.purchase_count
-            if a.create_time.strftime("%Y-%m-%d",) == time_now4:
+            if a.create_time.strftime("%Y-%m-%d", ) == time_now4:
                 limit4 += a.purchase_count
-            if a.create_time.strftime("%Y-%m-%d",) == time_now5:
+            if a.create_time.strftime("%Y-%m-%d", ) == time_now5:
                 limit5 += a.purchase_count
     return render_to_response('purchase_count.html',
-                              {'username': username, 'time_now': time_now, 'time_now1':time_now1,
+                              {'username': username, 'time_now': time_now, 'time_now1': time_now1,
                                'time_now2': time_now2, 'time_now3': time_now3, 'time_now4': time_now4,
                                'time_now5': time_now5, 'limti': limit, 'limit1': limit1, 'limit2': limit2,
                                'limit3': limit3, 'limit4': limit4, 'limit5': limit5}, )
@@ -278,36 +345,31 @@ def stock_count(request):
     time_now3 = (datetime.datetime.now() + datetime.timedelta(days=3)).strftime("%Y-%m-%d", )
     time_now4 = (datetime.datetime.now() + datetime.timedelta(days=4)).strftime("%Y-%m-%d", )
     time_now5 = (datetime.datetime.now() + datetime.timedelta(days=5)).strftime("%Y-%m-%d", )
-    que_list=[time_now,time_now1,time_now2,time_now3,time_now4,time_now5]
+    que_list = [time_now, time_now1, time_now2, time_now3, time_now4, time_now5]
     for i in que_list:
         datas = DrugStock.objects.filter(create_time__contains=i)
         for a in datas:
-            if a.create_time.strftime("%Y-%m-%d",) == time_now:
+            if a.create_time.strftime("%Y-%m-%d", ) == time_now:
                 limit += a.stock_count
-            if a.create_time.strftime("%Y-%m-%d",) == time_now1:
+            if a.create_time.strftime("%Y-%m-%d", ) == time_now1:
                 limit1 += a.stock_count
-            if a.create_time.strftime("%Y-%m-%d",) == time_now2:
+            if a.create_time.strftime("%Y-%m-%d", ) == time_now2:
                 limit2 += a.stock_count
-            if a.create_time.strftime("%Y-%m-%d",) == time_now3:
+            if a.create_time.strftime("%Y-%m-%d", ) == time_now3:
                 limit3 += a.stock_count
-            if a.create_time.strftime("%Y-%m-%d",) == time_now4:
+            if a.create_time.strftime("%Y-%m-%d", ) == time_now4:
                 limit4 += a.stock_count
-            if a.create_time.strftime("%Y-%m-%d",) == time_now5:
+            if a.create_time.strftime("%Y-%m-%d", ) == time_now5:
                 limit5 += a.stock_count
     return render_to_response('stock_count.html',
-                              {'username': username, 'time_now': time_now, 'time_now1':time_now1,
+                              {'username': username, 'time_now': time_now, 'time_now1': time_now1,
                                'time_now2': time_now2, 'time_now3': time_now3, 'time_now4': time_now4,
                                'time_now5': time_now5, 'limti': limit, 'limit1': limit1, 'limit2': limit2,
                                'limit3': limit3, 'limit4': limit4, 'limit5': limit5}, )
 
 
-
-
-
-
-#采购查询列表
+# 采购查询列表
 class DrugPurchaseListView(APIView):
-
     def get(self, request, format=None):
 
         catid = request.GET.get("catid")
@@ -315,11 +377,13 @@ class DrugPurchaseListView(APIView):
         length = int(request.GET.get('length', '0'))
         draw = int(request.GET.get('draw', '0'))
 
-        columnList = ('drugs_name', 'category', 'unit', 'model', 'manufacturer', 'register_code','update_time','group', 'purchase_count')
-        #排序
+        columnList = (
+            'drugs_name', 'category', 'unit', 'model', 'manufacturer', 'register_code', 'update_time', 'group',
+            'purchase_count')
+        # 排序
         order_column = request.GET.get("order[0][column]")
 
-        #asc desc 升序或者降序
+        # asc desc 升序或者降序
         order_dir = request.GET.get('order[0][dir]')
         if order_column:
             ordercol = columnList[int(order_column)]
@@ -330,10 +394,10 @@ class DrugPurchaseListView(APIView):
             queryset_list = DrugPurchase.objects.all()
 
         recordsTotal = queryset_list.count()
-        #搜索
+        # 搜索
         search = request.GET.get("search[value]")
 
-        #类型（首先判断有子类）
+        # 类型（首先判断有子类）
         if catid and int(catid) > 0:
 
             parents = Category.objects.get(id=catid)
@@ -375,21 +439,23 @@ class DrugPurchaseListView(APIView):
 
         return Response(resp)
 
-#销售查询列表
-class DrugSaleListView(APIView):
 
-    def get(self, request, format = None):
+# 销售查询列表
+class DrugSaleListView(APIView):
+    def get(self, request, format=None):
 
         catid = request.GET.get("catid")
         start = int(request.GET.get('start', '0'))
         length = int(request.GET.get('length', '0'))
         draw = int(request.GET.get('draw', '0'))
 
-        columnList = ('drugs_name', 'category', 'unit', 'model', 'manufacturer', 'register_code','update_time','group', 'sale_count', 'customer_name','customer_tel')
-        #排序
+        columnList = (
+            'drugs_name', 'category', 'unit', 'model', 'manufacturer', 'register_code', 'update_time', 'group',
+            'sale_count', 'customer_name', 'customer_tel')
+        # 排序
         order_column = request.GET.get("order[0][column]")
 
-        #asc desc 升序或者降序
+        # asc desc 升序或者降序
         order_dir = request.GET.get('order[0][dir]')
         if order_column:
             ordercol = columnList[int(order_column)]
@@ -400,10 +466,10 @@ class DrugSaleListView(APIView):
             queryset_list = DrugSale.objects.all()
 
         recordsTotal = queryset_list.count()
-        #搜索
+        # 搜索
         search = request.GET.get("search[value]")
 
-        #类型（首先判断有子类）
+        # 类型（首先判断有子类）
         if catid and int(catid) > 0:
 
             parents = Category.objects.get(id=catid)
@@ -426,8 +492,8 @@ class DrugSaleListView(APIView):
                 Q(model__icontains=search) |
                 Q(manufacturer__icontains=search) |
                 Q(register_code__icontains=search) |
-                Q(sale_count__icontains=search)|
-                Q(customer_name__icontains=search)|
+                Q(sale_count__icontains=search) |
+                Q(customer_name__icontains=search) |
                 Q(customer_tel__icontains=search)
             )
 
@@ -446,4 +512,3 @@ class DrugSaleListView(APIView):
         }
 
         return Response(resp)
-
