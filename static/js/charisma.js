@@ -21,7 +21,7 @@ $(document).ready(function () {
             )// ... nor a descendant of the container
         {
             e.stopPropagation();
-            $('.navbar-toggle').click();
+          //  $('.navbar-toggle').click();
         }
     });
 
