@@ -1,6 +1,7 @@
 # coding=utf-8
 from django.db import models
 from django.contrib.auth.models import User, Group
+from django.utils.datetime_safe import date
 from mptt.models import MPTTModel,TreeForeignKey
 #from smart_selects.db_fields import ChainedForeignKey
 
@@ -82,7 +83,7 @@ class DrugSale(models.Model):
     group = models.ForeignKey(Group,verbose_name=u'单位编码', null=True, on_delete=models.CASCADE)
     input_owner = models.ForeignKey(User,verbose_name=u'录入人员', null=True, on_delete=models.CASCADE)
     sale_count=models.IntegerField(verbose_name=u'销售数量',default=0)
-    update_time = models.DateField(verbose_name=u'销售时间',)
+    update_time = models.DateField(verbose_name=u'销售时间',default=date.today())
     create_time = models.DateTimeField(verbose_name=u'录入时间', auto_now_add=True,auto_now=False)
 
     def __str__(self):
@@ -104,7 +105,7 @@ class DrugPurchase(models.Model):
     group = models.ForeignKey(Group,verbose_name=u'单位编码', null=True, on_delete=models.CASCADE)
     input_owner = models.ForeignKey(User,verbose_name=u'录入人员', null=True, on_delete=models.CASCADE)
     purchase_count= models.IntegerField(verbose_name=u'采购数量')
-    update_time = models.DateField(verbose_name=u'采购时间',)
+    update_time = models.DateField(verbose_name=u'采购时间',default=date.today())
     create_time = models.DateTimeField(verbose_name=u'录入时间', auto_now_add=True,auto_now=False)
 
     def __str__(self):

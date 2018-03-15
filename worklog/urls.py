@@ -15,12 +15,12 @@ Including another URLconf
     2. Add a URL to urlpatterns:  url(r'^blog/', include('blog.urls'))
 """
 from django.conf.urls import url, include
-from django.conf.urls import url, include
 from django.contrib import admin
 from django.conf.urls.static import static
 from django.conf import settings
 from administration.views import userlogin, CheckCode, admins, index, stock_list, sale_list, purchase_list, \
-    DrugStockListView, sale_count_day, purchase_count,stock_count,DrugPurchaseListView,DrugSaleListView,sale_count_month
+    DrugStockListView, sale_count_day, purchase_count, stock_count, DrugPurchaseListView, DrugSaleListView, \
+    sale_count_month, userlogout, changepwd
 
 admin.site.site_header = u'农药追溯系统'
 
@@ -28,7 +28,9 @@ urlpatterns = [
     url(r'^admin/', admin.site.urls),
     # url(r'^chaining/',include('smart_selects.urls')),
     url(r'^checkcode/$', CheckCode),
-    url(r'^login/$',userlogin , name="drug-login"),
+    url(r'^login/$', userlogin, name="drug-login"),
+    url(r'^logout/$', userlogout, name="drug-logout"),
+    url(r'^changepwd/$', changepwd, name="drug-changepwd"),
     url(r'^admins/$', admins),
     url(r'^index/$', index, name="drug-index"),
     url(r'^stock_list/$', stock_list, name="stock-list"),
@@ -46,4 +48,5 @@ urlpatterns = [
 ]
 
 if settings.DEBUG:
+    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

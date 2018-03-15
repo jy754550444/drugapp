@@ -1,14 +1,17 @@
 # coding=utf-8
-# Create your views here.
-import json, datetime
+
+import json,datetime
+from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, render_to_response, HttpResponse
 import io
+from django.urls import reverse
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from .forms import ChangepwdForm
 from .check import create_validate_code
 from django.http import HttpResponseRedirect
-from .models import DrugStock, DrugPurchase, DrugSale, Category
-from django.contrib.auth import authenticate, login
+from .models import DrugStock, DrugPurchase, DrugSale,Category
+from django.contrib.auth import authenticate,login,logout
 from django.views.decorators.csrf import csrf_exempt
 from django.db.models import Q
 from .serializers import DrugStockListSerializer, DrugPurchaseListSerializer, DrugSaleListSerializer
@@ -44,7 +47,7 @@ def userlogin(request):
         # 从session中获取验证码
         session_code = request.session["CheckCode"]
         if check_code.strip().lower() != session_code.lower():
-            return HttpResponse('验证码不匹配')
+            return render(request,"login.html",{"errors":"验证码不匹配"})
         else:
             username = request.POST.get('username')
             request.session['username'] =request.POST.get('username')
@@ -53,22 +56,43 @@ def userlogin(request):
             user = authenticate(username=username, password=pad)
             if user is not None:
                 if user.is_active:
-                    login(request, user)
-                    return HttpResponseRedirect('/index/')
+                    login(request,user)
+                    return HttpResponseRedirect(reverse("drug-index"))
             else:
-                return HttpResponse('用户名或密码不正确')
-
-    return render_to_response('login.html')
-
-
-# from django.contrib.auth import logout as auth_logout
-# #用户退出
-# def logout(request):
-#     auth_logout(request)
-#     return render_to_response('login.html')
+                return render(request,"login.html",{"errors":"用户名或密码不正确"})
+    return render(request,'login.html')
 
 
-# 首页
+#用户退出
+def userlogout(request):
+    logout(request)
+    return HttpResponseRedirect(reverse("drug-login"))
+
+
+@login_required(login_url="/login/")
+def changepwd(request):
+    if request.method == 'GET':
+        form = ChangepwdForm()
+        return render(request,'change_password.html', {"form":form})
+    else:
+        form = ChangepwdForm(request.POST)
+        if form.is_valid():
+            username = request.user.username
+            oldpassword = request.POST.get('oldpassword', '')
+            user = authenticate(username=username, password=oldpassword)
+            if user is not None and user.is_active:
+                password = request.POST.get('password', '')
+                user.set_password(password)
+                user.save()
+                return render(request,'change_password.html', {"changepwd_success":True})
+            else:
+                return render(request,'change_password.html',  {'form': form, 'oldpassword_is_wrong': True})
+        else:
+            return render(request,'change_password.html',  {'form': form})
+    return render(request,"change_password.html")
+
+#首页
+@login_required(login_url="/login/")
 def index(request):
     limit_day = 0
     limit_month = 0
@@ -97,7 +121,8 @@ def index(request):
                                           'limit_month_purchase': limit_month_purchase})
 
 
-# 库存查询列表
+#库存查询列表
+@login_required(login_url="/login/")
 def stock_list(request):
     context = {
         "categorys": Category.objects.all()
@@ -105,7 +130,8 @@ def stock_list(request):
     return render(request, 'stock_list.html', context)
 
 
-# 采购查询列表
+#采购查询列表
+@login_required(login_url="/login/")
 def purchase_list(request):
     context = {
         "categorys": Category.objects.all()
@@ -113,15 +139,17 @@ def purchase_list(request):
     return render(request, 'storage_list.html', context)
 
 
-# 销售查询列表
+
+#销售查询列表
+@login_required(login_url="/login/")
 def sale_list(request):
     context = {
         "categorys": Category.objects.all()
     }
     return render(request, 'sale_list.html', context)
 
+#库存查询列表
 
-# 库存查询列表
 class DrugStockListView(APIView):
     def get(self, request, format=None):
         catid = request.GET.get("catid")
@@ -205,6 +233,7 @@ class DrugStockListView(APIView):
 
 
 # 销售日统计
+@login_required(login_url="/login/")
 def sale_count_day(request):
     limit = 0
     limit1 = 0
@@ -243,6 +272,7 @@ def sale_count_day(request):
 
 
 # 销售月统计
+@login_required(login_url="/login/")
 def sale_count_month(request):
     limit = 0
     limit1 = 0
@@ -293,6 +323,7 @@ def sale_count_month(request):
 
 
 # 采购统计
+@login_required(login_url="/login/")
 def purchase_count(request):
     limit = 0
     limit1 = 0
@@ -331,6 +362,7 @@ def purchase_count(request):
 
 
 # 库存统计
+@login_required(login_url="/login/")
 def stock_count(request):
     limit = 0
     limit1 = 0

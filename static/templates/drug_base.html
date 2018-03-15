@@ -16,7 +16,7 @@
     {% block extrastyle %}{% endblock extrastyle%}
     {% block javascript %}
         <script src="{% static "js/jquery.min.js" %}"></script>
-
+        <script src="{% static "js/Chart.min.js" %}"></script>
     {% endblock javascript%}
     {% block extrahead %}{% endblock extrahead%}
 
@@ -47,9 +47,9 @@
                      <span class="caret"></span>
                  </button>
                  <ul class="dropdown-menu">
-                     <li><a href="{% url 'admin:password_change' %}">修改密码</a></li>
+                     <li><a href="{% url 'drug-changepwd' %}">修改密码</a></li>
                      <li class="divider"></li>
-                     <li><a href="{% url 'admin:logout' %}">退出</a></li>
+                     <li><a href="{% url 'drug-logout' %}">退出</a></li>
                  </ul>
             </div>
             {% endif %}
@@ -62,7 +62,7 @@
     </div>
     {% endblock navbar %}    <!-- 头部导航结束 -->
     {% block content %}
-        <div class="container-fluid">
+        <div class="container-fluid" style="min-height:100%">
             <div class="row">
                 <!-- 左侧菜单开始 -->
                 {% block leftnav %}
@@ -94,11 +94,11 @@
             </div><!--/#content.col-md-0-->
         </div><!--/fluid-row-->
         {% block footer %}
+            <footer class="footer navbar-fixed-bottom">
             <hr>
-            <footer class="row">
                 <p class="col-md-9 col-sm-9 col-xs-12 copyright">&copy;
-                <a href="#" target="_blank">Muhammad Usman</a> 2012 - 2015</p>
-                <p class="col-md-3 col-sm-3 col-xs-12 powered-by">Powered by: <a href="">Charisma</a></p>
+                <a href="#" target="_blank">辽宁浩天联智科技有限公司</a> 2012 - 2018</p>
+                <p class="col-md-3 col-sm-3 col-xs-12 powered-by">Powered by: <a href="">浩天联智</a></p>
             </footer>
         {% endblock footer %}
 
@@ -118,7 +118,7 @@
 <script src="{% static "js/jquery.autogrow-textarea.js" %}"></script>
 <script src="{% static "js/jquery.uploadify-3.1.min.js" %}"></script>
 <script src="{% static "js/jquery.history.js" %}"></script>
-{#<script src="{% static "js/charisma.js" %}"></script>#}
+<script src="{% static "js/charisma.js" %}"></script>
 {% endblock bottomjs %}
 {% block extrajs %}
 {% endblock extrajs %}
