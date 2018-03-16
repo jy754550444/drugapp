@@ -82,7 +82,7 @@ admin.site.register(Region,RegionAdmin)
 class DrugSaleAdmin(admin.ModelAdmin):
     list_display = ['drugs_name','unit','model','manufacturer','register_code','customer_name','customer_tel','sale_count', 'update_time', ]
     fields = ('drugs_name', 'unit', 'model', 'manufacturer', 'register_code', 'customer_name', 'customer_tel',
-              'customer_address', 'sale_count','update_time')
+              'customer_address', 'sale_count','update_time','retreat')
     search_fields = ['drugs_name__name','customer_name','customer_tel','model','manufacturer','register_code']
     list_filter = ('drugs_name',)
 
@@ -96,12 +96,24 @@ class DrugSaleAdmin(admin.ModelAdmin):
             return qs.filter(company_id=group)
 
     def save_model(self, request, obj, form, change):
-
         ds = DrugStock.objects.get(id=obj.drugs_name.id)
-        if ds.stock_count > obj.sale_count:
-            ds.stock_count = ds.stock_count - obj.sale_count
-            ds.save()
-
+        if change:
+            if obj.retreat == True:
+                change_data= DrugSale.objects.get(id=obj.id)
+                if change_data.sale_count >=obj.sale_count:
+                    ds.stock_count = obj.sale_count+ds.stock_count
+                    obj.sale_count = change_data.sale_count-obj.sale_count
+                    ds.save()
+                    obj.save()
+                else:
+                    # print("退货大于库存量，不能退货")
+                    return not change
+            else:
+                return not change
+        else:
+            if ds.stock_count > obj.sale_count:
+                ds.stock_count = ds.stock_count - obj.sale_count
+                ds.save()
         obj.input_owner = request.user
         userobj = request.user
         if userobj.groups.count() > 0:
@@ -114,7 +126,7 @@ admin.site.register(DrugSale, DrugSaleAdmin)
 
 class DrugPurchaseAdmin(admin.ModelAdmin):
     list_display = ('drugs_name','unit','model','manufacturer','register_code','purchase_count','update_time')
-    fields  = ('drugs_name','unit','model','manufacturer','register_code','purchase_count','update_time')
+    fields  = ('drugs_name','unit','model','manufacturer','register_code','purchase_count','update_time','retreat')
     search_fields = ['drugs_name__name','model','manufacturer','register_code']
     list_filter = ('update_time',)
 
@@ -128,6 +140,24 @@ class DrugPurchaseAdmin(admin.ModelAdmin):
             return qs.filter(group=group)
 
     def save_model(self, request, obj, form, change):
+        ad = DrugStock.objects.get(id = obj.drugs_name.id)
+        if change:
+            if obj.retreat == True:
+                change_data= DrugPurchase.objects.get(id=obj.id)
+                if change_data.purchase_count < obj.purchase_count:
+                    # print("退货大于库存量，不能退货")
+                    return not change
+                else:
+                    ad.stock_count = ad.stock_count-obj.purchase_count
+                    obj.purchase_count = change_data.purchase_count-obj.purchase_count
+                    ad.save()
+                    obj.save()
+            else:
+                return not change
+        else:
+            ad.stock_count = obj.purchase_count + ad.stock_count
+            ad.save()
+
         obj.input_owner = request.user
         userobj = request.user
         if userobj.groups.count() > 0:
@@ -135,12 +165,5 @@ class DrugPurchaseAdmin(admin.ModelAdmin):
             group = Group.objects.get(pk=groups[0].id)
             obj.group = group
         obj.save()
-        print("-----------------")
-        print(obj.drugs_name)
-       # re = super(DrugPurchaseAdmin,self).save_model(request, obj, form, change)
-        ad = DrugStock.objects.get(id = obj.drugs_name.id)
-        ad.stock_count = obj.purchase_count + ad.stock_count
-        ad.save()
         return obj
-
 admin.site.register(DrugPurchase,DrugPurchaseAdmin)
