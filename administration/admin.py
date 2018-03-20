@@ -80,9 +80,9 @@ admin.site.register(Region,RegionAdmin)
 
 #药品销售
 class DrugSaleAdmin(admin.ModelAdmin):
-    list_display = ['drugs_name','unit','model','manufacturer','register_code','customer_name','customer_tel','sale_count', 'update_time', ]
+    list_display = ['drugs_name','unit','model','manufacturer','register_code','customer_name','customer_tel','sale_count', 'update_time','retrea_count' ]
     fields = ('drugs_name', 'unit', 'model', 'manufacturer', 'register_code', 'customer_name', 'customer_tel',
-              'customer_address', 'sale_count','update_time','retreat')
+              'customer_address', 'sale_count','update_time','retreat','retrea_count')
     search_fields = ['drugs_name__name','customer_name','customer_tel','model','manufacturer','register_code']
     list_filter = ('drugs_name',)
 
@@ -99,10 +99,10 @@ class DrugSaleAdmin(admin.ModelAdmin):
         ds = DrugStock.objects.get(id=obj.drugs_name.id)
         if change:
             if obj.retreat == True:
-                change_data= DrugSale.objects.get(id=obj.id)
-                if change_data.sale_count >=obj.sale_count:
-                    ds.stock_count = obj.sale_count+ds.stock_count
-                    obj.sale_count = change_data.sale_count-obj.sale_count
+                if obj.sale_count >=obj.retrea_count:
+                    ds.stock_count = obj.retrea_count+ds.stock_count
+                    obj.sale_count = obj.sale_count-obj.retrea_count
+                    obj.retrea_count = obj.retrea_count
                     ds.save()
                     obj.save()
                 else:
@@ -123,10 +123,10 @@ class DrugSaleAdmin(admin.ModelAdmin):
         obj.save()
 admin.site.register(DrugSale, DrugSaleAdmin)
 
-
+#采购
 class DrugPurchaseAdmin(admin.ModelAdmin):
-    list_display = ('drugs_name','unit','model','manufacturer','register_code','purchase_count','update_time')
-    fields  = ('drugs_name','unit','model','manufacturer','register_code','purchase_count','update_time','retreat')
+    list_display = ('drugs_name','unit','model','manufacturer','register_code','purchase_count','update_time','retrea_count')
+    fields  = ('drugs_name','unit','model','manufacturer','register_code','purchase_count','update_time','retreat','retrea_count')
     search_fields = ['drugs_name__name','model','manufacturer','register_code']
     list_filter = ('update_time',)
 
@@ -143,13 +143,13 @@ class DrugPurchaseAdmin(admin.ModelAdmin):
         ad = DrugStock.objects.get(id = obj.drugs_name.id)
         if change:
             if obj.retreat == True:
-                change_data= DrugPurchase.objects.get(id=obj.id)
-                if change_data.purchase_count < obj.purchase_count:
+                if obj.purchase_count < obj.retrea_count:
                     # print("退货大于库存量，不能退货")
                     return not change
                 else:
-                    ad.stock_count = ad.stock_count-obj.purchase_count
-                    obj.purchase_count = change_data.purchase_count-obj.purchase_count
+                    ad.stock_count = ad.stock_count-obj.retrea_count
+                    obj.purchase_count = obj.purchase_count-obj.retrea_count
+                    obj.retrea_count = obj.retrea_count
                     ad.save()
                     obj.save()
             else:

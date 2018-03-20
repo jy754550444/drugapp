@@ -86,6 +86,7 @@ class DrugSale(models.Model):
     update_time = models.DateField(verbose_name=u'销售时间',default=timezone.now)
     create_time = models.DateTimeField(verbose_name=u'录入时间', auto_now_add=True,auto_now=False)
     retreat = models.BooleanField(verbose_name=u'退货',default=False)
+    retrea_count = models.IntegerField(verbose_name=u'退货数量',default=0)
 
     def __str__(self):
         return self.drugs_name.name
@@ -109,6 +110,7 @@ class DrugPurchase(models.Model):
     update_time = models.DateField(verbose_name=u'采购时间',default=timezone.now)
     create_time = models.DateTimeField(verbose_name=u'录入时间', auto_now_add=True,auto_now=False)
     retreat = models.BooleanField(verbose_name=u'退货',default=False)
+    retrea_count = models.IntegerField(verbose_name=u'退货数量',default=0)
 
     def __str__(self):
         return self.drugs_name.name
