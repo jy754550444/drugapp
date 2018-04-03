@@ -1,10 +1,20 @@
 # coding=utf-8
+
+import mptt
+from django.db import models
+from mptt.fields import TreeForeignKey
 from django.contrib import admin
 from django.contrib.auth.models import Group, User
 from .models import DrugStock,Category,Unit,Region,DrugSale,DrugPurchase
 
 from mptt.admin import MPTTModelAdmin
 # Register your models here.
+
+
+
+#add a parent foreign key
+TreeForeignKey(Group, blank=True, null=True,verbose_name='父类',on_delete=models.CASCADE, db_index=True).contribute_to_class(Group, 'parent')
+mptt.register(Group, order_insertion_by=['name'])
 
 #药品库存
 
@@ -46,8 +56,6 @@ class CategoryAdmin(MPTTModelAdmin):
             return qs
         else:
             return qs.filter(user=request.user)
-
-admin.site.register(Category, CategoryAdmin)
 
 
 #计量单位

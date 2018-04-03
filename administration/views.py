@@ -15,7 +15,7 @@ from django.contrib.auth import authenticate,login,logout
 from django.views.decorators.csrf import csrf_exempt
 from django.db.models import Q
 from .serializers import DrugStockListSerializer, DrugPurchaseListSerializer, DrugSaleListSerializer
-
+from django.contrib.auth.models import Group
 
 # 后台自动获取数据ajax
 def admins(request):
@@ -140,6 +140,16 @@ def purchase_list(request):
 
 
 
+#地区查询列表
+@login_required(login_url="/login/")
+def group_list(request):
+
+    context = {
+        "group":Group.objects.all()
+    }
+    return render(request, 'group_list.html', context)
+
+
 #销售查询列表
 @login_required(login_url="/login/")
 def sale_list(request):
@@ -149,7 +159,6 @@ def sale_list(request):
     return render(request, 'sale_list.html', context)
 
 #库存查询列表
-
 class DrugStockListView(APIView):
     def get(self, request, format=None):
         catid = request.GET.get("catid")
@@ -535,6 +544,213 @@ class DrugSaleListView(APIView):
             queryset_list = queryset_list[start:(start + length)]
 
         serializer = DrugSaleListSerializer(queryset_list, many=True)
+
+        resp = {
+            'draw': draw,
+            'recordsTotal': recordsTotal,
+            'recordsFiltered': recordsFiltered,
+            'data': serializer.data,
+        }
+
+        return Response(resp)
+
+
+
+# 地区采购查询列表
+class GroupListView(APIView):
+    def get(self, request, format=None):
+
+        catid = request.GET.get("catid")
+        start = int(request.GET.get('start', '0'))
+        length = int(request.GET.get('length', '0'))
+        draw = int(request.GET.get('draw', '0'))
+        start_time = request.GET.get("start_time")
+        end_time = request.GET.get("end_time")
+        print(start_time,end_time,11111111111111111111)
+        columnList = (
+            'drugs_name', 'category', 'unit', 'model', 'manufacturer', 'register_code', 'update_time', 'group',
+            'purchase_count')
+        # 排序
+        order_column = request.GET.get("order[0][column]")
+
+        # asc desc 升序或者降序
+        order_dir = request.GET.get('order[0][dir]')
+        if order_column:
+            ordercol = columnList[int(order_column)]
+            if order_dir == "desc":
+                ordercol = "-" + ordercol
+            queryset_list = DrugPurchase.objects.order_by(ordercol)
+        else:
+            queryset_list = DrugPurchase.objects.all()
+
+        recordsTotal = queryset_list.count()
+        # 搜索
+        search = request.GET.get("search[value]")
+
+        # 类型（首先判断有子类）
+        if catid and int(catid) > 0:
+
+            parents = Group.objects.get(id=catid)
+
+            children = parents.get_children().count()
+            descendant = parents.get_descendant_count()
+
+            if children > 0 and children == descendant:
+                queryset_list = queryset_list.filter(drugs_name__group__parent=catid)
+            elif children > 0 and children != descendant:
+                queryset_list = queryset_list.filter(drugs_name__group__parent__parent=catid)
+            else:
+                queryset_list = queryset_list.filter(drugs_name__group__id=catid)
+
+        if start_time and end_time:
+            queryset_list = queryset_list.filter(update_time__range=(start_time,end_time))
+
+        recordsFiltered = queryset_list.count()
+
+        if start >= 0 and length > 0:
+            queryset_list = queryset_list[start:(start + length)]
+
+        serializer = DrugPurchaseListSerializer(queryset_list, many=True)
+
+        resp = {
+            'draw': draw,
+            'recordsTotal': recordsTotal,
+            'recordsFiltered': recordsFiltered,
+            'data': serializer.data,
+        }
+
+        return Response(resp)
+
+
+# 地区销售查询列表
+class GroupSaleListView(APIView):
+    def get(self, request, format=None):
+
+        catid = request.GET.get("catids")
+        print(catid,33333333333333333333)
+        start = int(request.GET.get('start', '0'))
+        length = int(request.GET.get('length', '0'))
+        draw = int(request.GET.get('draw', '0'))
+        start_time = request.GET.get("start_times")
+        end_time = request.GET.get("end_times")
+        print(start_time,111111111111111111),
+        print(end_time,222222222222222)
+        columnList = (
+            'drugs_name', 'category', 'unit', 'model', 'manufacturer', 'register_code', 'update_time', 'group',
+            'sale_count', 'customer_name', 'customer_tel')
+        # 排序
+        order_column = request.GET.get("order[0][column]")
+
+        # asc desc 升序或者降序
+        order_dir = request.GET.get('order[0][dir]')
+        if order_column:
+            ordercol = columnList[int(order_column)]
+            if order_dir == "desc":
+                ordercol = "-" + ordercol
+            queryset_list = DrugSale.objects.order_by(ordercol)
+        else:
+            queryset_list = DrugSale.objects.all()
+
+        recordsTotal = queryset_list.count()
+        # 搜索
+        search = request.GET.get("search[value]")
+
+        # 类型（首先判断有子类）
+        if catid and int(catid) > 0:
+
+            parents = Group.objects.get(id=catid)
+
+            children = parents.get_children().count()
+            descendant = parents.get_descendant_count()
+
+            if children > 0 and children == descendant:
+                queryset_list = queryset_list.filter(drugs_name__group__parent=catid)
+            elif children > 0 and children != descendant:
+                queryset_list = queryset_list.filter(drugs_name__group__parent__parent=catid)
+            else:
+                queryset_list = queryset_list.filter(drugs_name__group__id=catid)
+
+        # if search and len(search) > 0:
+        #     queryset_list = queryset_list.filter(
+        #         Q(drugs_name__name__icontains=search) |
+        #         Q(drugs_name__group__name__icontains=search) |
+        #         Q(unit__name__icontains=search) |
+        #         Q(model__icontains=search) |
+        #         Q(manufacturer__icontains=search) |
+        #         Q(register_code__icontains=search) |
+        #         Q(sale_count__icontains=search) |
+        #         Q(customer_name__icontains=search) |
+        #         Q(customer_tel__icontains=search)
+        #     )
+        if start_time and end_time:
+            queryset_list = queryset_list.filter(update_time__range=(start_time,end_time))
+        recordsFiltered = queryset_list.count()
+
+        if start >= 0 and length > 0:
+            queryset_list = queryset_list[start:(start + length)]
+
+        serializer = DrugSaleListSerializer(queryset_list, many=True)
+
+        resp = {
+            'draw': draw,
+            'recordsTotal': recordsTotal,
+            'recordsFiltered': recordsFiltered,
+            'data': serializer.data,
+        }
+
+        return Response(resp)
+
+#地区库存查询列表
+class GroupStockListView(APIView):
+    def get(self, request, format=None):
+        catid = request.GET.get("catsid")
+        start = int(request.GET.get('start', '0'))
+        length = int(request.GET.get('length', '0'))
+        draw = int(request.GET.get('draw', '0'))
+        starts_time = request.GET.get("starts_time")
+        ends_time = request.GET.get("ends_time")
+        columnList = ('name', 'category', 'unit', 'model', 'manufacturer', 'register_code', 'group', 'stock_count')
+        # 排序
+        order_column = request.GET.get("order[0][column]")
+
+        # asc desc 升序或者降序
+        order_dir = request.GET.get('order[0][dir]')
+        if order_column:
+            ordercol = columnList[int(order_column)]
+            if order_dir == "desc":
+                ordercol = "-" + ordercol
+            queryset_list = DrugStock.objects.order_by(ordercol)
+        else:
+            queryset_list = DrugStock.objects.all()
+
+        recordsTotal = queryset_list.count()
+        # 搜索
+        search = request.GET.get("search[value]")
+
+        # 类型（首先判断有子类）
+        if catid and int(catid) > 0:
+
+            parents = Group.objects.get(id=catid)
+
+            children = parents.get_children().count()
+            descendant = parents.get_descendant_count()
+
+            if children > 0 and children == descendant:
+                queryset_list = queryset_list.filter(group__parent=catid)
+            elif children > 0 and children != descendant:
+                queryset_list = queryset_list.filter(group__parent__parent=catid)
+            else:
+                queryset_list = queryset_list.filter(group__id=catid)
+
+        if starts_time and ends_time:
+            queryset_list = queryset_list.filter(update_time__range=(starts_time,ends_time))
+
+        recordsFiltered = queryset_list.count()
+
+        if start >= 0 and length > 0:
+            queryset_list = queryset_list[start:(start + length)]
+
+        serializer = DrugStockListSerializer(queryset_list, many=True)
 
         resp = {
             'draw': draw,

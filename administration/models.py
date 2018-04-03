@@ -1,9 +1,11 @@
 # coding=utf-8
 from django.db import models
-from django.contrib.auth.models import User, Group
+from django.contrib.auth.models import User, Group,Permission,GroupManager
 from django.utils import timezone
 from mptt.models import MPTTModel,TreeForeignKey
 #from smart_selects.db_fields import ChainedForeignKey
+
+
 
 
 #药品类别
@@ -68,6 +70,7 @@ class Region(models.Model):
     class Meta:
         verbose_name = u'地区'
         verbose_name_plural = u'地区'
+
 
 
 #药品销售
