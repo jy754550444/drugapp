@@ -1,0 +1,47 @@
+{% extends "drugadmin/drugbase.html" %}{% load static %}
+{% block title %}登录窗口{% endblock %}
+{% block container %}
+<div id="login-window" class="easyui-window" title="登录窗口" style="padding:5px;width:350px;height:205px" >
+    <div class="easyui-layout" fit="true" onkeydown="if(event.keyCode==13){submitForm();}">
+        <div data-options="region:'north',border:false" style="text-align:center;height:120px;padding:5px;background:#fff;border:1px solid #ccc;">
+            <form class="easyui-form" id="ff" method="post" action="{% url 'drugadmin-login' %}">
+                <div style="margin-top:10px;padding:5px 0;">
+                    <label for="login">用户:</label>
+                    <input type="text" name="username" class="easyui-textbox" required="true"></input>
+                </div>
+                <div style="padding:5px 0;">
+                    <label for="password">密码:</label>
+                    <input type="password" name="password"  class="easyui-textbox" required="true"></input>
+                </div>
+                <div style="padding:5px 0;text-align: center;color: red;" id="errors"></div>
+            </form>
+        </div>
+        <div region="south" border="false"  style="text-align:right;padding:5px 0;">
+                <a class="easyui-linkbutton" iconCls="icon-ok" href="javascript:void(0)" onclick="submitForm()">登录</a>
+                <a class="easyui-linkbutton" iconCls="icon-cancel" href="javascript:void(0)" onclick="clearForm()">重置</a>
+        </div>
+    </div>
+</div>
+{% endblock container %}
+</body>
+</html>
+{% block bottomjs %}
+    <script>
+		function submitForm(){
+			$('#ff').form('submit',{
+                success:function(data){
+                    var data = eval('(' + data + ')');
+                    if( data.success =="true" ){
+                        location.href = data.url;
+                    }else{
+                        $("#errors").html(data.error);
+                    }
+                }
+            });
+		}
+		function clearForm(){
+            $("#errors").html('');
+			$('#ff').form('clear');
+		}
+	</script>
+{% endblock bottomjs %}

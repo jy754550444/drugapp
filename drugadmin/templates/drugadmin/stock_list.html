@@ -1,0 +1,72 @@
+{% load static %}
+	<script type="text/javascript">
+		$(function(){
+
+		});
+	</script>
+
+    <h2>药品库存查询</h2>
+    <table id="stocklist" class="easyui-datagrid" title="库存查询" style="width:90%;height:90%"
+           data-options="loadMsg: '数据加载中请稍后……',
+                        url: '{% url 'drug-stock-search' %}',
+                        rownumbers:true,
+                        singleSelect:true,
+                        method:'get',
+                        toolbar:'#stocklistbar',
+                        idField:'id',
+                        pagination:true,
+                        fitColumns:true,
+                        striped:true,
+                        pageSize:20">
+                <thead>
+                    <tr>
+                        <th data-options="field:'name',width:160,halign:'center',align:'center'">药品名称</th>
+                        <th data-options="field:'categoryname',width:120,halign:'center',align:'center'">药品类型</th>
+                        <th data-options="field:'unitname',width:60,halign:'center',align:'center'">计量单位</th>
+                        <th data-options="field:'model',width:120,halign:'center'">规格型号</th>
+                        <th field="manufacturer" width="240">生产厂家</th>
+                        <th data-options="field:'register_code',width:120,halign:'center',align:'center'">登记证号</th>
+                        <th data-options="field:'sale_count',width:60,halign:'center',align:'right'">库存数量</th>
+                        <th data-options="field:'bar_code',width:60,halign:'center',align:'center'">条形码</th>
+                        <th data-options="field:'or_code',width:60,halign:'center',align:'center'">二维码</th>
+                    </tr>
+                </thead>
+            </table>
+            <div id="stocklistbar" style="padding:10px;height:auto;">
+                 <span style="margin-right:5px;"> 类型: <input id="categ_id" class="easyui-combotree" name="categ_id"
+                                                       data-options="valueField:'id',
+                                                               textField:'text',
+                                                               width:'160px',
+                                                               panelWidth:'260px',
+                                                               panelHeight:'300px',
+                                                               method:'get',
+                                                               url:'{% url 'drug-cate-list' %}'" />
+                </span>
+                药品名称: <input id="drgname" class="easyui-textbox"  style="width:100px">
+                登记号: <input id="registercode" class="easyui-textbox"  style="width:100px">
+                厂家: <input id="manufaturer" class="easyui-textbox"  style="width:165px">
+                <a href="#" class="easyui-linkbutton" iconCls="icon-search" onclick="stockSearch()"> 查询</a>
+                <a href="#" class="easyui-linkbutton" iconCls="icon-search" onclick="stockReset()"> 重置</a>
+            </div>
+
+    <script type="text/javascript">
+
+        function stockSearch(){
+             $("#stocklist").datagrid('load',{
+                 categ_id: $('#categ_id').combotree('getValue'),
+                 registercode: $('#registercode').textbox('getValue'),
+                 manufaturer: $('#manufaturer').textbox('getValue'),
+                 drgname: $('#drgname').textbox('getValue'),
+             });
+
+        }
+
+        function stockReset(){
+
+            $('#categ_id').combotree('clear');
+            $('#registercode').textbox('clear');
+            $('#manufaturer').textbox('clear');
+            $('#drgname').textbox('clear');
+        }
+
+    </script>

@@ -1,0 +1,267 @@
+{% load static %}
+    <h2>药品库存管理</h2>
+    <table id="stock" class="easyui-datagrid" title="药品库存维护" style="width:90%;height:90%"
+           data-options="loadMsg: '数据加载中请稍后……',
+                        url: '{% url "drug-stock-list" %}',
+                        rownumbers:true,
+                        singleSelect:true,
+                        method:'get',
+                        toolbar:'#stocktoolbar',
+                        idField:'id',
+                        pagination:true,
+                        fitColumns:true,
+                        striped:true,
+                        pageSize:20,
+                        onDblClickRow:onStockDblClickRow,
+                        onEndEdit:onStockEndEdit">
+                <thead>
+                    <tr>
+                        <th data-options="field:'name',width:120,halign:'center',align:'center',editor:{type:'textbox',options:{required:true} }">药品名称</th>
+                         <th data-options="field:'category',width:140,halign:'center',align:'center',
+                                formatter:function(value,row){
+                                    return row.categoryname;
+                                },
+                                editor:{
+                                    type:'combotree',
+                                    options:{
+                                        valueField:'id',
+                                        textField:'text',
+                                        method:'get',
+                                        panelWidth:300,
+                                        url:'{% url "drug-cate-list" %}',
+                                        required:true,
+                                    }
+                                }">药品类型</th>
+                        <th data-options="field:'unit',
+                                            width:60,
+                                            halign:'center',
+                                            align:'center',
+                                            formatter:function(value,row){
+                                                return row.unitname;
+                                            },
+                                            editor:{
+                                                type:'combobox',
+                                                options:{
+                                                    valueField:'id',
+                                                    textField:'name',
+                                                    method:'get',
+                                                    url:'{% url "drug-unit-list" %}',
+                                                    required:true
+                                                }
+                                }">计量单位</th>
+                        <th data-options="field:'model',width:120,halign:'center',editor:{type:'textbox',options:{required:true}}">规格型号</th>
+                        <th data-options="field:'bar_code',width:120,halign:'center',editor:{type:'textbox'}">条形码</th>
+                        <th data-options="field:'or_code',width:120,halign:'center',editor:{type:'textbox'}">二维码</th>
+                        <th data-options="field:'register_code',width:120,halign:'center',align:'center',editor:{type:'textbox',options:{required:true}}">登记证号</th>
+                        <th field="manufacturer" width="240" halign="center" align="center" editor="{type:'textbox',options:{required:true}}" >生产厂家</th>
+                        <th data-options="field:'stock_count',width:60,halign:'center',align:'right',editor:'numberbox'">库存数量</th>
+                    </tr>
+                </thead>
+            </table>
+            <div id="stocktoolbar" style="padding:5px;height:auto;">
+                <div style="margin-bottom:15px;">
+                <a href="#" class="easyui-linkbutton c2" iconCls="icon-add" plain="true" onclick="stock_add()">增加</a>
+                <a href="#" class="easyui-linkbutton" iconCls="icon-save" plain="true" onclick="stock_save()">保存</a>
+                <a href="#" class="easyui-linkbutton" iconCls="icon-cancel" plain="true" onclick="stock_cancel()">取消</a>
+                <a href="#" class="easyui-linkbutton" iconCls="icon-edit" plain="true" onclick="stock_edit()">修改</a>
+                <a href="#" class="easyui-linkbutton" iconCls="icon-remove" plain="true" onclick="stock_del()">删除</a>
+                <a href="#" class="easyui-linkbutton" iconCls="icon-reload" plain="true" onclick="stock_refresh()">刷新</a>
+                <span style="margin-left:30px;">药品类型: <input id="catid" class="easyui-combotree" name="catid"
+                                                   data-options="valueField:'id',
+                                                   textField:'text',
+                                                   panelWidth:'300px',
+                                                   panelHeight:'300px',
+                                                   method:'get',
+                                                   url:'{% url 'drug-cate-list' %}'" />
+                    <a href="#" class="easyui-linkbutton" iconCls="icon-search" onclick="stockSearch()">查询</a>
+                    <a href="#" class="easyui-linkbutton" iconCls="icon-undo" onclick="stockReset()">重置</a>
+                </span>
+                </div>
+
+            </div>
+        </div>
+
+    <script type="text/javascript">
+        var stCurIndex = undefined;
+
+{#        function setItemValue(index,colname,value){#}
+{#             var ed_item = $('#stock').edatagrid('getEditor', {index:index,field:colname});#}
+{#             $(ed_item.target).textbox('setText',value);#}
+{#         }#}
+
+		function stEndEditing(){
+			if (stCurIndex == undefined){
+                return true
+            }
+			if ($('#stock').datagrid('validateRow', stCurIndex)){
+				$('#stock').datagrid('endEdit', stCurIndex);
+				stCurIndex = undefined;
+				return true;
+			} else {
+				return false;
+			}
+		}
+
+        function onStockDblClickRow(index, row){
+
+			if (stCurIndex != index){
+				if (stEndEditing()){
+					$('#stock').datagrid('selectRow', index)
+							.datagrid('beginEdit', index);
+					stCurIndex = index;
+				} else {
+					$('#stock').datagrid('selectRow', stCurIndex);
+				}
+			}
+		}
+
+
+        function stock_add(){
+
+            if( stCurIndex == undefined && $('#stock').datagrid("getRows").length > 0 ){
+                $('#stock').datagrid('loadData', { total: 0, rows: [] });
+            }else if( stCurIndex !=undefined  ){
+                row = $('#stock').datagrid("getSelected");
+                if(row && row.id > 0){
+                    $('#stock').datagrid('loadData', { total: 0, rows: [] });
+                }
+            }
+
+            if(stEndEditing()){
+                $('#stock').datagrid('appendRow', {category:'',stock_count:0});
+                stCurIndex = $('#stock').datagrid('getRows').length-1;
+                var row= $('#stock').datagrid('selectRow', stCurIndex);
+
+                $('#stock').datagrid('beginEdit', stCurIndex);
+            }
+        }
+
+        function stock_edit(){
+            if(stEndEditing()){
+                var row = $('#stock').datagrid('getSelected');
+                if (row) {
+                    stCurIndex = $('#stock').datagrid('getRowIndex', row);
+                    $('#stock').datagrid('beginEdit', stCurIndex);
+
+                }
+            }
+        }
+
+        function _stockdel(row){
+            var rowIndex = $('#stock').datagrid('getRowIndex', row);
+            $('#stock').datagrid('cancelEdit', rowIndex);
+            $('#stock').datagrid('deleteRow', rowIndex);
+            var rows = $('#stock').datagrid('getChanges');
+            if(rows.length > 0){
+                var deleted = $('#stock').datagrid('getChanges', "deleted"); //获取删除状态的行
+                var effectRow = new Object();
+                if (deleted.length == 0){return;}
+
+                effectRow['deleted'] = JSON.stringify(deleted);
+                $.ajax({
+                      type: "post",
+                      dataType: "json",
+                      data: effectRow,
+                      url: "{% url 'drug-stock-del' %}",
+                      success: function (data){
+                          if (data.success == 'false'){
+                              $.messager.alert('警告', data.errors, 'info');
+                          }else{
+                                $.messager.show({
+                                            title: '提示',
+                                            msg: '删除成功！',
+                                            style:{
+                                                right:'',
+                                                bottom:''
+                                            }
+					            });
+                              $('#stock').datagrid('acceptChanges');
+                          }
+                      },
+                      error: function (error) {
+                          $.messager.alert('警告','删除错误！', 'info');
+                      }
+                });
+            }
+        }
+
+        function stock_del(){
+             var row = $('#stock').datagrid('getSelected');
+            if (row) {
+                $.messager.confirm('删除确认提示','删除选中的药品，将会删除此药品的采购和销售记录，真的要删除吗?',function(r){
+					if (r){
+                         _stockdel(row);
+                    }
+				});
+
+            }
+        }
+
+        function stock_cancel(){
+            $('#stock').datagrid('rejectChanges');
+			stCurIndex = undefined;
+        }
+
+         function onStockEndEdit(index,row) {
+             var ed_unit = $('#stock').edatagrid('getEditor', {index:index,field:'unit'});
+             row.unitname = $(ed_unit.target).combobox('getText');
+             var ed_category = $('#stock').edatagrid('getEditor', {index:index,field:'category'});
+             row.categoryname = $(ed_category.target).combobox('getText');
+         }
+
+        function stock_save(){
+            if (stEndEditing()){
+                var rows = $('#stock').datagrid('getChanges');
+                if(rows.length > 0){
+                    var inserted = $('#stock').datagrid('getChanges', "inserted"); //获取添加状态的行
+                    var updated = $('#stock').datagrid('getChanges', "updated"); //获取修改加状态的行
+                    var effectRow = new Object();
+                    if (inserted.length != 0){
+                        effectRow['inserted'] = JSON.stringify(inserted);
+                    }
+                    if( updated.length != 0 ){
+                        effectRow['updated'] = JSON.stringify(updated);
+                    }
+                    if(effectRow.length == 0 ){return ;}
+                    console.log(effectRow);
+                    $.ajax({
+                          type: "post",
+                          dataType: "json",
+                          data: effectRow,
+                          url: "{% url 'drug-stock-save' %}",
+                          success: function (data){
+                              if (data.success == 'false'){
+                                  $.messager.alert('警告', data.errors, 'info');
+                              }else{
+                                  $.messager.alert("提示", "提交成功！");
+                                  $('#stock').datagrid('acceptChanges');
+                              }
+                          },
+                          error: function (error) {
+                              $.messager.alert('警告','提交错误！', 'info');
+                          }
+                        });
+                }
+
+			}
+
+        }
+
+        function stock_refresh(){
+            $('#stock').datagrid('reload');
+            stCurIndex = undefined;
+        }
+
+        function stockSearch(){
+            var cat_id = $('#catid').combotree('getValue');
+
+             $("#stock").datagrid('load',{
+                    catid:cat_id
+             });
+            stCurIndex = undefined;
+
+        }
+        function stockReset(){
+            $('#catid').combotree('clear');
+        }
+    </script>

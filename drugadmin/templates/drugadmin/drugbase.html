@@ -1,0 +1,163 @@
+{% load static %}{% load sitetree %}<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="UTF-8">
+	<title>{% block title %}农药追溯系统{% endblock %}</title>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="description" content="">
+    {% block  stylesheet %}
+        <link rel="stylesheet" type="text/css" href="{% static 'drugadmin/easyui/themes/default/easyui.css' %}">
+        <link rel="stylesheet" type="text/css" href="{% static 'drugadmin/easyui/themes/icon.css' %}">
+        <link rel="stylesheet" type="text/css" href="{% static 'drugadmin/easyui/themes/color.css' %}">
+        <link rel="stylesheet" type="text/css" href="{% static 'drugadmin/css/index.css' %}">
+    {% endblock stylesheet %}
+    {% block extrastyle %}{% endblock extrastyle%}
+    {% block javascript %}
+        <script type="text/javascript" src="{% static 'drugadmin/easyui/js/jquery.min.js' %}"></script>
+        <script type="text/javascript" src="{% static 'drugadmin/easyui/js/jquery.cookie.js' %}"></script>
+        <script type="text/javascript" src="{% static 'drugadmin/easyui/js/jquery.easyui.min.js' %}"></script>
+         <script type="text/javascript" src="{% static 'drugadmin/easyui/js/jquery.edatagrid.js' %}"></script>
+        <script type="text/javascript" src="{% static 'drugadmin/easyui/locale/easyui-lang-zh_CN.js' %}"></script>
+        <script type="text/javascript" src="{% static 'drugadmin/js/drugmgr.js' %}"></script>
+        <script type="text/javascript">
+		$(function(){
+            $.ajaxSetup({
+                beforeSend: function(xhr,settings){
+                    xhr.setRequestHeader('X-CSRFtoken', $.cookie('csrftoken'))
+                }
+            });
+
+
+		});
+	</script>
+    {% endblock javascript%}
+    {% block extrahead %}{% endblock extrahead%}
+
+</head>
+<body class="easyui-layout" style="background-color: #013C77">
+{% block container %}
+	<div data-options="region:'north',border:false" class="north">
+        {% block north %}
+		<span class="toptitle"><img src="{% static 'drugadmin/images/logo.png' %}" style="width:40px;height:40px;">农药追溯系统</span>
+		<div class="topright">
+			<span style="color:#ddd">欢迎你，{{ request.user }}</span>
+			<a href="#" onclick="changepwd()"  style="color:#fff">修改密码</a>
+			<a href="{% url 'drugadmin-logout' %}" style="color:#fff">退出</a>
+		</div>
+        {% endblock north %}
+	</div>
+	<div data-options="region:'west',split:true"  style="width:170px;">
+        {% block west %}
+		<div class="easyui-accordion" data-options="fit:true,border:false">
+			<div title="药品管理" data-options="selected:true">
+				<div style="margin: 5px">
+				<ul class="easyui-tree" data-options="animate:true,lines:true">
+					{% sitetree_tree from "drugmgr" include "trunk" template "drugadmin/lefttree.html" %}
+				</ul>
+				</div>
+			</div>
+			
+		</div>
+        {% endblock west %}
+	</div>
+	<div data-options="region:'center'">
+        {% block center %}
+
+          {% endblock center %}
+	</div>
+    <div data-options="region:'south',border:false" style="height:25px;">
+        {% block south %}
+		<div class="footer" style="text-align:center;margin-top:4px;">辽宁浩天科技有限公司</div>
+        {% endblock south %}
+	</div>
+    <div id="chgdlg" class="easyui-dialog" style="overflow:hidden;width:400px;height:280px;padding:10px" closed="true" buttons="#dlg-buttons" onkeydown="if(event.keyCode==13){submitPassword();}">
+        <div class="ftitle">密码修改</div>
+        <form id="chgform" method="post">
+            <div class="fitem">
+                <label>原密码:</label>
+                <input id="oldpwd" name="oldpwd" class="easyui-textbox" required="true">
+            </div>
+            <div class="fitem">
+                <label>新密码:</label>
+                <input id="newpwd" name="newpwd" class="easyui-textbox" required="true">
+            </div>
+            <div class="fitem">
+                <label>确认密码:</label>
+                <input id="newpwd2" name="newpwd2" class="easyui-textbox" required="true">
+            </div>
+        </form>
+    </div>
+    <div id="dlg-buttons">
+        <a href="#" class="easyui-linkbutton" iconCls="icon-ok" onclick="submitPassword()">保存</a>
+        <a href="#" class="easyui-linkbutton" iconCls="icon-cancel" onclick="javascript:$('#chgdlg').dialog('close')">取消</a>
+    </div>
+{% endblock container %}
+
+</body>
+{% block bottomjs %}
+    <script type="text/javascript">
+    function addTab(title, url,icon){
+			if($('#tabs').tabs('exists', title)){
+				$('#tabs').tabs('select', title);
+			} else {
+				var content = '<div style="padding:10px">Content' + url + '</div>';
+				$('#tabs').tabs('add',{
+					title:title,
+					iconCls:icon,
+					href:url,
+                    style:{padding:10},
+					closable:true
+				});
+			}
+		}
+
+    function changepwd(){
+        $('#chgdlg').dialog('open').dialog('setTitle','密码修改窗口');
+        $('#chgform').form('clear');
+    }
+
+    function submitPassword(){
+        $('#chgform').form('submit',{
+            url: '{% url "drugadmin-changepwd" %}',
+            onSubmit: function(param){
+                param.csrfmiddlewaretoken = '{{ csrf_token }}';
+                if(!$(this).form('validate')){
+                    return false;
+                }
+                var newpwd = $("#newpwd").textbox("getText");
+                var newpwd2 = $("#newpwd2").textbox("getText");
+                if(newpwd != newpwd2){
+                    $.messager.show({
+						title: '提示',
+						msg: '两次密码不一致,请重新输入!',
+                        style:{
+                            right:'',
+                            bottom:''
+                        }
+					});
+                    $('#newpwd').textbox().next('span').find('input').focus();
+                    return false;
+                }
+                return true;
+            },
+            success: function(result){
+                var result = eval('('+result+')');
+                if (result.success == 'false'){
+                    $.messager.show({
+                        title: '错误提示',
+                        msg: '修改密码失败!'
+                    });
+                } else {
+                    $.messager.show({
+                        title: '提示',
+                        msg: '修改密码成功!'
+                    });
+                    $('#chgdlg').dialog('close');		// close the dialog
+                }
+            }
+        });
+    }
+    </script>
+{% endblock bottomjs %}
+
+</html>

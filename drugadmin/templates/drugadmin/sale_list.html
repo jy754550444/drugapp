@@ -1,0 +1,105 @@
+{% load static %}
+	<script type="text/javascript">
+		$(function(){
+
+		});
+	</script>
+
+    <h2>销售出库查询</h2>
+    <table id="salelist" class="easyui-datagrid" title="销售查询" style="width:90%;height:90%"
+           data-options="loadMsg: '数据加载中请稍后……',
+                        url: '{% url 'drug-sale-search' %}',
+                        rownumbers:true,
+                        singleSelect:true,
+                        method:'get',
+                        toolbar:'#salelistbar',
+                        idField:'id',
+                        pagination:true,
+                        fitColumns:true,
+                        striped:true,
+                        pageSize:20">
+                <thead>
+                    <tr>
+                        <th data-options="field:'drugname',width:160,halign:'center',align:'center'">药品名称</th>
+                        <th data-options="field:'categoryname',width:120,halign:'center',align:'center'">药品类型</th>
+                        <th data-options="field:'unitname',width:60,halign:'center',align:'center'">计量单位</th>
+                        <th data-options="field:'model',width:120,halign:'center'">规格型号</th>
+                        <th field="manufacturer" width="240">生产厂家</th>
+                        <th data-options="field:'register_code',width:120,halign:'center',align:'center'">登记证号</th>
+                        <th data-options="field:'customer_name',width:120,halign:'center'">客户姓名</th>
+                        <th data-options="field:'customer_tel',width:120,halign:'center'">客户电话</th>
+                        <th data-options="field:'customer_address',width:180,halign:'center'">客户地址</th>
+                        <th data-options="field:'update_time',width:100,halign:'center',align:'center'">销售时间</th>
+                        <th data-options="field:'sale_count',width:60,halign:'center',align:'right'">销售数量</th>
+                    </tr>
+                </thead>
+            </table>
+            <div id="salelistbar" style="padding:10px;height:auto;">
+                <span style="margin-left:10px;margin-right: 5px;">
+                    时间:从 <input id="sdate_at" class="easyui-datebox"  style="width:110px">&nbsp;&nbsp;到&nbsp;&nbsp;<input id="edate_at" class="easyui-datebox" style="width:110px">
+                    药品名称: <input id="drug_name" class="easyui-textbox"  style="width:145px">
+                </span>
+                 <span style="margin-right:5px;"> 类型: <input id="categoryid" class="easyui-combotree" name="categoryid"
+                                                       data-options="valueField:'id',
+                                                               textField:'text',
+                                                               width:'160px',
+                                                               panelWidth:'260px',
+                                                               panelHeight:'300px',
+                                                               method:'get',
+                                                               url:'{% url 'drug-cate-list' %}'" />
+                </span>
+                <div style="margin-left:10px;margin-right: 10px;margin-top:10px;">
+                    登记号: <input id="regcode" class="easyui-textbox"  style="width:100px">
+                    姓名: <input id="user_name" class="easyui-textbox"  style="width:115px">
+                    厂家: <input id="from_at" class="easyui-textbox"  style="width:165px">
+                    <span style="margin-right:5px;margin-left:5px;">
+                    电话: <input id="user_tel" class="easyui-textbox"  style="width:160px">
+                    <a href="#" class="easyui-linkbutton" iconCls="icon-search" onclick="saleSearch()"> 查询</a>
+                    <a href="#" class="easyui-linkbutton" iconCls="icon-search" onclick="saleReset()"> 重置</a>
+                    </span>
+                </div>
+            </div>
+
+    <script type="text/javascript">
+
+        function saleSearch(){
+            var sdate_at = $('#sdate_at').datebox('getValue');
+            var edate_at = $('#edate_at').datebox('getValue');
+             if(sdate_at.length > 0 && edate_at.length == 0){
+                 $.messager.show({
+						title: '提示',
+						msg: '请输入完整的时间段',
+                        style:{
+                            right:'',
+                            bottom:''
+                        }
+					});
+                 $('#edate_at').datebox().next('span').find('input').focus();
+                 return;
+             }
+
+             $("#salelist").datagrid('load',{
+                 sdate_at: $('#sdate_at').datebox('getValue'),
+                 edate_at: $('#edate_at').datebox('getValue'),
+                 categoryid: $('#categoryid').combotree('getValue'),
+                 regcode: $('#regcode').textbox('getValue'),
+                 from_at: $('#from_at').textbox('getValue'),
+                 user_name: $('#user_name').textbox('getValue'),
+                 user_tel: $('#user_tel').textbox('getValue'),
+                 drug_name: $('#drug_name').textbox('getValue'),
+             });
+
+        }
+
+        function saleReset(){
+            $('#sdate_at').datebox('clear');
+            $('#edate_at').datebox('clear');
+            $('#categoryid').combotree('clear');
+            $('#regcode').textbox('clear');
+            $('#from_at').textbox('clear');
+            $('#user_name').textbox('clear');
+            $('#user_tel').textbox('clear');
+            $('#drug_name').textbox('clear');
+        }
+
+    </script>

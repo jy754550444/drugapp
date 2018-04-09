@@ -1,0 +1,240 @@
+{% load static %}
+    <h2>采购入库管理</h2>
+    <table id="purchase" class="easyui-datagrid" title="采购入库单" style="width:90%;height:90%"
+           data-options="loadMsg: '数据加载中请稍后……',
+                        url: '',
+                        rownumbers:true,
+                        singleSelect:true,
+                        method:'get',
+                        toolbar:'#purtoolbar',
+                        idField:'id',
+                        pagination:true,
+                        fitColumns:true,
+                        striped:true,
+                        pageSize:20,
+                        onDblClickRow:onPurDblClickRow,
+                        onEndEdit:purchaseEndEdit">
+                <thead>
+                    <tr>
+                        <th data-options="field:'drugs_name',width:160,halign:'center',align:'center',
+                                formatter:function(value,row){
+                                    return row.drugname;
+                                },
+                                editor:{
+                                    type:'combogrid',
+                                    options:{
+                                        idField:'id',
+                                        textField:'name',
+                                        panelWidth:'500',
+                                        method:'get',
+                                        url:'/drugadmin/itemlist/',
+                                        columns:[[
+                                            {field:'id',title:'编码',width:30},
+                                            {field:'name',title:'药品名称',width:120},
+                                            {field:'categoryname',title:'类型',width:80},
+                                            {field:'unitname',title:'单位',width:80},
+                                            {field:'model',title:'规格型号',width:100},
+                                            {field:'manufacturer',title:'厂家',width:120,align:'center'},
+                                            {field:'register_code',title:'登记号',width:90,align:'center'},
+                                            {field:'stock_count',title:'库存数量',width:60,align:'center'},
+                                        ]],
+                                        required:true,
+                                        onSelect:purchaseSelect
+                                    }
+                                }">药品名称</th>
+                        <th data-options="field:'unit',width:60,
+                                halign:'center',align:'center',
+                                formatter:function(value,row){
+                                    return row.unitname;
+                                },
+                                editor:{
+                                    type:'combobox',
+                                    options:{
+                                        valueField:'id',
+                                        textField:'name',
+                                        method:'get',
+                                        url:'/drugadmin/unitlist/',
+                                        required:true
+                                    }
+                                }">计量单位</th>
+                        <th data-options="field:'model',width:120,halign:'center',editor:{type:'textbox',options:{required:true}}">规格型号</th>
+                        <th field="manufacturer" width="240" editor="{type:'textbox',options:{required:true}}" >生产厂家</th>
+                        <th data-options="field:'register_code',width:120,halign:'center',align:'center',editor:{type:'textbox',options:{required:true}}">登记证号</th>
+                        <th data-options="field:'update_time',width:100,halign:'center',align:'center',editor:{type:'datebox',options:{required:true}}">采购时间</th>
+                        <th data-options="field:'purchase_count',width:60,halign:'center',align:'right',editor:'numberbox'">采购数量</th>
+                    </tr>
+                </thead>
+            </table>
+            <div id="purtoolbar" style="padding:5px;height:auto;">
+                <div style="margin-bottom:15px;">
+                <a href="#" class="easyui-linkbutton c2" iconCls="icon-add" plain="true" onclick="purchase_add()">增加</a>
+                <a href="#" class="easyui-linkbutton" iconCls="icon-save" plain="true" onclick="purchase_save()">保存</a>
+                <a href="#" class="easyui-linkbutton" iconCls="icon-cancel" plain="true" onclick="purchase_cancel()">取消</a>
+{#                <a href="#" class="easyui-linkbutton" iconCls="icon-edit" plain="true" onclick="purchase_edit()">修改</a>#}
+{#                <a href="#" class="easyui-linkbutton" iconCls="icon-remove" plain="true" onclick="purchase_del()">删除</a>#}
+{#                <a href="#" class="easyui-linkbutton" iconCls="icon-reload" plain="true" onclick="purchase_refresh()">刷新</a>#}
+                <span style="margin-left:30px;">时间: <input id="purchase_at" class="easyui-datebox"  style="width:110px">
+                    <a href="#" class="easyui-linkbutton" iconCls="icon-search" onclick="purchaseSearch()">查询</a>
+                </span>
+                </div>
+
+            </div>
+        </div>
+
+    <script type="text/javascript">
+        var pCurIndex = undefined;
+
+		function purEndEditing(){
+			if (pCurIndex == undefined){
+                return true
+            }
+			if ($('#purchase').datagrid('validateRow', pCurIndex)){
+				$('#purchase').datagrid('endEdit', pCurIndex);
+				pCurIndex = undefined;
+				return true;
+			} else {
+				return false;
+			}
+		}
+
+        function onPurDblClickRow(index, row){
+            if(row && row.id > 0) return;
+			if (pCurIndex != index){
+				if (purEndEditing()){
+					$('#purchase').datagrid('selectRow', index)
+							.datagrid('beginEdit', index);
+					pCurIndex = index;
+				} else {
+					$('#purchase').datagrid('selectRow', pCurIndex);
+				}
+			}
+		}
+
+
+        function purchase_add(){
+
+            if( pCurIndex == undefined && $('#purchase').datagrid("getRows").length > 0 ){
+                $('#purchase').datagrid('loadData', { total: 0, rows: [] });
+            }
+
+            if(purEndEditing()){
+                $('#purchase').datagrid('appendRow',
+                        {
+                            purchase_count:0,
+                            update_time:getDate()
+                        }
+                );
+                pCurIndex = $('#purchase').datagrid('getRows').length-1;
+                $('#purchase').datagrid('selectRow', pCurIndex);
+                $('#purchase').datagrid('beginEdit', pCurIndex);
+            }
+        }
+
+        function purchase_edit(){
+            if(purEndEditing()){
+                var row = $('#purchase').datagrid('getSelected');
+                if (row) {
+                    pCurIndex = $('#purchase').datagrid('getRowIndex', row);
+                    $('#purchase').datagrid('beginEdit', pCurIndex);
+                }
+            }
+        }
+
+        function purchase_del(){
+             var row = $('#purchase').datagrid('getSelected');
+            if (row) {
+                var rowIndex = $('#purchase').datagrid('getRowIndex', row);
+                $('#purchase').datagrid('cancelEdit', rowIndex);
+                $('#purchase').datagrid('deleteRow', rowIndex);
+            }
+        }
+
+        function purchase_cancel(){
+            $('#purchase').datagrid('rejectChanges');
+			pCurIndex = undefined;
+        }
+
+         function purchaseEndEdit(index,row) {
+             var ed_unit = $('#purchase').datagrid('getEditor', {index:index,field:'unit'});
+             row.unitname = $(ed_unit.target).combobox('getText');
+             var ed_drugs_name = $('#purchase').datagrid('getEditor', {index:index,field:'drugs_name'});
+             row.drugname = $(ed_drugs_name.target).combobox('getText');
+         }
+
+        function purchase_save(){
+            if (purEndEditing()){
+                var rows = $('#purchase').datagrid('getChanges');
+                if(rows.length > 0){
+                    var inserted = $('#purchase').datagrid('getChanges', "inserted"); //获取添加状态的行
+                    var effectRow = new Object();
+                    if (inserted.length == 0){ return; }
+
+                    effectRow['inserted'] = JSON.stringify(inserted);
+
+                    console.log(effectRow);
+                    $.ajax({
+                          type: "post",
+                          dataType: "json",
+                          data: effectRow,
+                          url: "{% url 'drug-purchase-save' %}",
+                          success: function (data){
+                              if (data.success == 'false'){
+                                  $.messager.alert('警告', data.errors, 'info');
+                              }else{
+                                  $.messager.alert("提示", "提交成功！");
+                                  $('#purchase').datagrid('acceptChanges');
+                              }
+                          },
+                          error: function (error) {
+                              $.messager.alert('警告','提交错误！', 'info');
+                          }
+                        });
+                }
+
+			}
+
+        }
+
+        function purchase_refresh(){
+            $('#purchase').datagrid('reload');
+        }
+
+        function purchaseSearch(){
+            var purchase_at = $('#purchase_at').datebox('getValue');
+             if(purchase_at.length == 0){
+                 $.messager.show({
+						title: '提示',
+						msg: '请输入时间',
+                        style:{
+                            right:'',
+                            bottom:''
+                        }
+					});
+                 $('#purchase_at').datebox().next('span').find('input').focus();
+                 return;
+             }
+
+            var options = $('#purchase').datagrid('options');
+            options.url = '{% url "drug-purchase-list" %}';
+             $("#purchase").datagrid('load',{
+                 purchase_at: $('#purchase_at').datebox('getValue'),
+             });
+            pCurIndex = undefined;
+
+        }
+         function purchaseSelect(index,rec){
+
+             var ed_unit = $('#purchase').edatagrid('getEditor', {index:pCurIndex,field:'unit'});
+             $(ed_unit.target).combobox('setValue',rec.unit);
+
+             var ed_manufacturer = $('#purchase').edatagrid('getEditor', {index:pCurIndex,field:'manufacturer'});
+             $(ed_manufacturer.target).textbox('setText',rec.manufacturer);
+
+             var ed_model = $('#purchase').edatagrid('getEditor', {index:pCurIndex,field:'model'});
+             $(ed_model.target).textbox('setText',rec.model);
+
+             var ed_regcode = $('#purchase').edatagrid('getEditor', {index:pCurIndex,field:'register_code'});
+             $(ed_regcode.target).textbox('setText',rec.register_code);
+         }
+
+    </script>

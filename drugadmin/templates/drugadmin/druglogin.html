@@ -1,0 +1,49 @@
+{% extends "drugadmin/drugbase.html" %}{% load static %}
+{% block title %}登录窗口{% endblock %}
+{% block container %}
+<div class="login">
+	<div class="login_top"></div>
+	<div class="login_middle">
+		<div class="login_mid_left"></div>
+		<div class="login_mid_center" onkeydown="if(event.keyCode==13){submitForm();}">
+			<div class="easyui-layout" fit="true" style="margin-top:40px;">
+				<form  id="ff" method="post" action="{% url 'drugadmin-login' %}">
+					 <div style="margin-bottom:25px;float:left;">
+						<input class="easyui-textbox" id="username" name="username" style="width:220px;height:30px;padding:10px"  data-options="prompt:'请输入登录用户',iconCls:'icon-man',iconWidth:38">
+					</div>
+					<div style="margin-bottom:20px;float:left;">
+						<input class="easyui-textbox" id="password" name="password" type="password"  style="width:220px;height:30px;padding:10px" data-options="prompt:'登录密码',iconCls:'icon-lock',iconWidth:38">
+					</div>
+					<div  id="errors"></div>
+				</form>
+				<div style="text-align:right;padding:5px 0;float:left;height:30px;width:90%;">
+					<a class="easyui-linkbutton" style="width:80px;" iconCls="icon-ok" href="javascript:void(0)" onclick="submitForm()">登录</a>
+                    <a class="easyui-linkbutton" style="width:80px;" iconCls="icon-cancel" href="javascript:void(0)" onclick="clearForm()">重置</a>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+{% endblock container %}
+</body>
+</html>
+{% block bottomjs %}
+    <script>
+		function submitForm(){
+			$('#ff').form('submit',{
+                success:function(data){
+                    var data = eval('(' + data + ')');
+                    if( data.success =="true" ){
+                        location.href = data.url;
+                    }else{
+                        $("#errors").html(data.error);
+                    }
+                }
+            });
+		}
+		function clearForm(){
+            $("#errors").html('');
+			$('#ff').form('clear');
+		}
+	</script>
+{% endblock bottomjs %}

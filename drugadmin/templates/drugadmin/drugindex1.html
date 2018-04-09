@@ -1,0 +1,219 @@
+{% extends "drugadmin/drugbase.html" %}{% load static %}
+{% block extrahead %}
+	<script type="text/javascript">
+		$(function(){
+
+			$('#tt').edatagrid({
+				url: '/drugadmin/salelist/',
+				saveUrl: '/drugadmin/salesave/',
+				updateUrl: '/drugadmin/saleupdate/',
+				destroyUrl: '/drugadmin/saledelete/',
+                onError: function(index,row){
+                     console.log(row);
+                 }
+             });
+
+            $('#itemid').combobox('clear');
+		});
+	</script>
+{% endblock extrahead%}
+ {% block center %}
+
+    <div id="tabs" class="easyui-tabs" data-options="tools:'#tab-tools',fit:true,border:false">
+        <div title="主页" data-options="iconCls:'icon-ok'" style="padding: 10px;">
+            <h2>销售出库单管理</h2>
+            <table id="tt"  title="销售出库单" style="width:90%;height:90%"
+                    data-options="rownumbers:true,
+                                singleSelect:true,
+                                method:'get',
+                                toolbar:'#toolbar',
+                                idField:'id',
+                                pagination:true,
+                                fitColumns:true,
+                                striped:true,
+                                onEndEdit:onEndEdit,
+                                onBeginEdit:onBeginEdit,
+                                onEdit:onEdit
+                                ">
+                <thead>
+                    <tr>
+                        <th data-options="field:'drugs_name',width:160,halign:'center',align:'center',
+                                formatter:function(value,row){
+                                    return row.drugname;
+                                },
+                                editor:{
+                                    type:'combobox',
+                                    options:{
+                                        valueField:'id',
+                                        textField:'name',
+                                        method:'get',
+                                        url:'/drugadmin/itemlist/',
+                                        required:true,
+                                        onSelect:onSelect
+                                    }
+                                }">药品名称</th>
+                        <th data-options="field:'unit',width:80,
+                                halign:'center',align:'center',
+                                formatter:function(value,row){
+                                    return row.unitname;
+                                },
+                                editor:{
+                                    type:'combobox',
+                                    options:{
+                                        valueField:'id',
+                                        textField:'name',
+                                        method:'get',
+                                        url:'/drugadmin/unitlist/',
+                                        required:true
+                                    }
+                                }">计量单位</th>
+                        <th data-options="field:'model',width:120,halign:'center',editor:{type:'textbox',options:{required:true}}">规格型号</th>
+                        <th field="manufacturer" width="240" editor="{type:'textbox',options:{required:true}}" >生产厂家</th>
+                        <th data-options="field:'register_code',width:120,halign:'center',align:'center',editor:{type:'textbox',options:{required:true}}">登记证号</th>
+                        <th data-options="field:'update_time',width:100,halign:'center',align:'center',editor:{type:'datebox',options:{required:true}}">销售时间</th>
+                        <th data-options="field:'customer_name',width:120,halign:'center',editor:{type:'textbox',options:{required:true}}">客户姓名</th>
+                        <th data-options="field:'customer_tel',width:120,halign:'center',editor:{type:'textbox',options:{required:true}}">客户电话</th>
+                        <th data-options="field:'customer_address',width:180,halign:'center',editor:'textbox'">客户地址</th>
+                        <th data-options="field:'sale_count',width:60,halign:'center',align:'right',editor:'numberbox'">销售数量</th>
+                    </tr>
+                </thead>
+            </table>
+            <div id="toolbar" style="padding:5px;height:auto;">
+                <div style="margin-bottom:15px;">
+                <a href="#" class="easyui-linkbutton c2" iconCls="icon-add" plain="true" onclick="javascript:$('#tt').edatagrid('addRow')">增加</a>
+                <a href="#" class="easyui-linkbutton" iconCls="icon-save" plain="true" onclick="javascript:$('#tt').edatagrid('saveRow')">保存</a>
+                <a href="#" class="easyui-linkbutton" iconCls="icon-cancel" plain="true" onclick="javascript:$('#tt').edatagrid('cancelRow')">取消</a>
+                <a href="#" class="easyui-linkbutton" iconCls="icon-remove" plain="true" onclick="javascript:$('#tt').edatagrid('destroyRow')">删除</a>
+                <a href="#" class="easyui-linkbutton" iconCls="icon-reload" plain="true" onclick="javascript:$('#tt').edatagrid('reload')">刷新</a>
+                <span style="margin-left:30px;">时间从: <input id="begindate" class="easyui-datebox"  style="width:110px">
+                到: <input id="enddate" class="easyui-datebox" style="width:110px">
+                类型:
+                <input id="itemid" class="easyui-combotree" name="itemid"
+                                   data-options="valueField:'id',
+                                   textField:'text',
+                                   panelWidth:'300px',
+                                   panelHeight:'300px',
+                                   method:'get',
+                                   url:'{% url 'drug-cate-list' %}'" />
+                <a href="#" class="easyui-linkbutton" iconCls="icon-search" onclick="doSearch()">查询</a></span>
+                </div>
+                <div style="margin-bottom:10px;">
+                    客户姓名: <input id="cuser" class="easyui-textbox" required="true" style="width:110px">
+                    客户电话: <input id="ctel" class="easyui-textbox" required="true" style="width:110px">
+                    客户地址: <input id="caddress" class="easyui-textbox"  style="width:200px">
+                </div>
+            </div>
+        </div>
+    </div>
+
+ {% endblock center %}
+{% block bottomjs %}
+    {{ block.super }}
+<script type="text/javascript">
+         var cur_row,editIndex;
+         function onSelect(rec)
+         {
+             cur_row = rec;
+
+             var ed_unit = $('#tt').edatagrid('getEditor', {index:editIndex,field:'unit'});
+             $(ed_unit.target).combobox('setValue',rec.unit);
+
+             var ed_manufacturer = $('#tt').edatagrid('getEditor', {index:editIndex,field:'manufacturer'});
+             $(ed_manufacturer.target).textbox('setText',rec.manufacturer);
+
+             var ed_model = $('#tt').edatagrid('getEditor', {index:editIndex,field:'model'});
+             $(ed_model.target).textbox('setText',rec.model);
+
+             var ed_regcode = $('#tt').edatagrid('getEditor', {index:editIndex,field:'register_code'});
+             $(ed_regcode.target).textbox('setText',rec.register_code);
+
+         }
+         function onAdd(index,row){
+             var ed_user = $('#tt').edatagrid('getEditor', {index:index,field:'customer_name'});
+
+             var cusername = $("#cuser").textbox("getText");
+             if( cusername.length > 0 )
+                $(ed_user.target).textbox('setText',cusername);
+
+{#             var ed_tel = $('#tt').edatagrid('getEditor', {index:index,field:'customer_tel'});#}
+{#             var ctel = $("#ctel").textbox("getText")#}
+{#             if( len(ctel) > 0 )#}
+{#                $(ed_tel.target).textbox('setText',ctel);#}
+{##}
+{##}
+{#             var ed_address = $('#tt').edatagrid('getEditor', {index:index,field:'customer_address'});#}
+{#             var caddress = $("#caddress").textbox("getText")#}
+{#             if( len(caddress) > 0 )#}
+{#                $(ed_address.target).textbox('setText',caddress);#}
+         }
+         function onEdit(index,row){
+
+             editor = $('#tt').edatagrid('getEditor', { index: index, field: 'drugs_name' });
+             $(editor.target).combobox('disable');
+
+             var ed_unit = $('#tt').edatagrid('getEditor', {index:editIndex,field:'unit'});
+             $(ed_unit.target).combobox('disable');
+
+             var ed_manufacturer = $('#tt').edatagrid('getEditor', {index:editIndex,field:'manufacturer'});
+             $(ed_manufacturer.target).textbox('disable');
+
+             var ed_model = $('#tt').edatagrid('getEditor', {index:editIndex,field:'model'});
+             $(ed_model.target).textbox('disable');
+
+             var ed_regcode = $('#tt').edatagrid('getEditor', {index:editIndex,field:'register_code'});
+             $(ed_regcode.target).textbox('disable');
+
+         }
+
+         function onBeginEdit(index,row)
+         {
+             editIndex = index;
+             var ed_user = $('#tt').edatagrid('getEditor', {index:index,field:'customer_name'});
+             var cusername = $("#cuser").textbox("getText");
+             if( cusername.length > 0 )
+                $(ed_user.target).textbox('setText',cusername);
+
+         }
+  		 function onEndEdit(index,row) {
+             var ed_unit = $('#tt').edatagrid('getEditor', {index:index,field:'unit'});
+             row.unitname = $(ed_unit.target).combobox('getText');
+             var ed_drugs_name = $('#tt').edatagrid('getEditor', {index:index,field:'drugs_name'});
+             row.drugname = $(ed_drugs_name.target).combobox('getText');
+         }
+
+         function doSearch(){
+             var begindate = $('#begindate').datebox('getValue');
+             if(begindate.length == 0){
+                 $.messager.show({
+						title: '提示',
+						msg: '请输入开始时间',
+                        style:{
+                            right:'',
+                            bottom:''
+                        }
+					});
+                 $('#begindate').datebox().next('span').find('input').focus();
+                 return;
+             }
+             var enddate = $('#enddate').datebox('getValue');
+             if(enddate.length == 0){
+                 $.messager.show({
+						title: '提示',
+						msg: '请输入结束时间',
+                        style:{
+                            right:'',
+                            bottom:''
+                        }
+					});
+                 return;
+             }
+             $("#tt").edatagrid('load',{
+                 begindate: $('#begindate').datebox('getValue'),
+                 enddate: $('#enddate').datebox('getValue'),
+                 itemid:$('#itemid').combobox('getValue')
+             });
+         }
+
+
+</script>
+{% endblock bottomjs %}

@@ -1,0 +1,16 @@
+{% load sitetree %}{% if sitetree_items %}
+{% for item in sitetree_items %}
+    {% if item.insitetree  %}
+        <li>{% if item.has_children %}
+            <span>{{ item.title_resolved }}</span>
+            {% else %}
+            <span><a href="#" onclick="addTab('{{ item.title_resolved }}', '{% sitetree_url for item %}','icon-add')">{{ item.title_resolved }}</a></span>
+            {% endif %}
+            {% if item.has_children %}
+             <ul>{% sitetree_children of item for sitetree template "drugadmin/lefttree.html" %}</ul>
+            {% endif %}
+        </li>
+    {% endif %}
+{% endfor %}
+
+{% endif %}

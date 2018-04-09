@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title></title>
+</head>
+<body>
+{% load static   %}
+{% load sitetree %}
+
+{% sitetree_tree from "drugmgr" include "trunk" template "drugadmin/lefttree.html" %}
+
+</body>
+</html>

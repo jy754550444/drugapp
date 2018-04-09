@@ -1,0 +1,305 @@
+{% extends "drugadmin/drugbase.html" %}{% load static %}
+{% block extrahead %}
+	<script type="text/javascript">
+		$(function(){
+
+            $.extend($.fn.numberbox.defaults.rules, {
+                overlimit:{
+                        validator:function(value, param){
+                            console.log(value);
+                            result = true;
+                            var fn = param[0];
+                            if(fn){
+                                result = fn();
+                                if(result == -1) {
+                                    result = true;
+                                }else if(value > result){
+                                    result = false;
+                                }
+                            }
+
+                            return result;
+                        },
+                    message : '已超库存数量'
+                }
+            });
+
+            $("#cuser").textbox({
+                onChange:function onChange(newValue, oldValue){
+                    if( editIndex != undefined )
+                        setSaleItemValue(editIndex,"customer_name",newValue);
+                }
+            });
+             $("#ctel").textbox({
+                onChange:function onChange(newValue, oldValue){
+                    if( editIndex != undefined )
+                        setSaleItemValue(editIndex,"customer_tel",newValue);
+                }
+            });
+             $("#caddress").textbox({
+                onChange:function onChange(newValue, oldValue){
+                    if( editIndex != undefined )
+                        setSaleItemValue(editIndex,"customer_address",newValue);
+                }
+            });
+		});
+	</script>
+{% endblock extrahead%}
+ {% block center %}
+
+    <div id="tabs" class="easyui-tabs" data-options="tools:'#tab-tools',fit:true,border:false">
+        <div title="销售出库单" data-options="iconCls:'icon-ok'" style="padding: 10px;">
+            <h2>销售出库单管理</h2>
+            <table id="sale" class="easyui-datagrid" title="销售出库单" style="width:90%;height:90%"
+                   data-options="loadMsg: '数据加载中请稍后……',
+                                url:'',
+                                rownumbers:true,
+                                singleSelect:true,
+                                method:'get',
+                                toolbar:'#toolbar',
+                                idField:'id',
+                                pagination:true,
+                                fitColumns:true,
+                                pageSize:20,
+                                striped:true,
+                                onDblClickRow:onSaleDblClickRow,
+                                onEndEdit:onSaleEndEdit">
+                <thead>
+                    <tr>
+                        <th data-options="field:'drugs_name',width:160,halign:'center',align:'center',
+                                formatter:function(value,row){
+                                    return row.drugname;
+                                },
+                                editor:{
+                                    type:'combogrid',
+                                    options:{
+                                        idField:'id',
+                                        textField:'name',
+                                        panelWidth:400,
+                                        method:'get',
+                                        url:'/drugadmin/itemlist/',
+                                        columns:[[
+                                            {field:'id',title:'编码',width:30},
+                                            {field:'name',title:'药品名称',width:120},
+                                            {field:'categoryname',title:'类型',width:80},
+                                            {field:'unitname',title:'单位',width:80},
+                                            {field:'model',title:'规格型号',width:100},
+                                            {field:'manufacturer',title:'厂家',width:120,align:'center'},
+                                            {field:'register_code',title:'登记号',width:90,align:'center'},
+                                            {field:'stock_count',title:'库存数量',width:60,align:'center'},
+                                        ]],
+                                        required:true,
+                                        onSelect:onSaleSelect
+                                    }
+                                }">药品名称</th>
+                        <th data-options="field:'unit',width:80,
+                                halign:'center',align:'center',
+                                formatter:function(value,row){
+                                    return row.unitname;
+                                },
+                                editor:{
+                                    type:'combobox',
+                                    options:{
+                                        valueField:'id',
+                                        textField:'name',
+                                        method:'get',
+                                        url:'/drugadmin/unitlist/',
+                                        required:true
+                                    }
+                                }">计量单位</th>
+                        <th data-options="field:'model',width:120,halign:'center',editor:{type:'textbox',options:{required:true}}">规格型号</th>
+                        <th field="manufacturer" width="240" editor="{type:'textbox',options:{required:true}}" >生产厂家</th>
+                        <th data-options="field:'register_code',width:120,halign:'center',align:'center',editor:{type:'textbox',options:{required:true}}">登记证号</th>
+                        <th data-options="field:'update_time',width:100,halign:'center',align:'center',editor:{type:'datebox',options:{required:true}}">销售时间</th>
+                        <th data-options="field:'customer_name',width:120,halign:'center',editor:{type:'textbox',options:{required:true}}">客户姓名</th>
+                        <th data-options="field:'customer_tel',width:120,halign:'center',editor:{type:'textbox',options:{required:true}}">客户电话</th>
+                        <th data-options="field:'customer_address',width:180,halign:'center',editor:'textbox'">客户地址</th>
+                        <th data-options="field:'sale_count',width:60,halign:'center',align:'right',editor:{type:'numberbox',options:{ validType:'overlimit[numsValidate]' }}">销售数量</th>
+                    </tr>
+                </thead>
+            </table>
+            <div id="toolbar" style="padding:5px;height:auto;">
+                <div style="margin-bottom:15px;">
+                <a href="#" class="easyui-linkbutton c2" iconCls="icon-add" plain="true" onclick="sale_add()">增加</a>
+                <a href="#" class="easyui-linkbutton" iconCls="icon-save" plain="true" onclick="sale_save()">保存</a>
+                <a href="#" class="easyui-linkbutton" iconCls="icon-cancel" plain="true" onclick="sale_cancel()">取消</a>
+                <span style="margin-left:30px;">
+                    时间: <input id="sale_at" class="easyui-datebox"  style="width:110px">
+                    <a href="#" class="easyui-linkbutton" iconCls="icon-search" onclick="doSaleSearch()">查询</a>
+                </span>
+                </div>
+                <div style="margin-bottom:10px;">
+                    客户姓名: <input id="cuser" class="easyui-textbox" data-options="" required="true" style="width:110px">
+                    客户电话: <input id="ctel" class="easyui-textbox" required="true" style="width:110px">
+                    客户地址: <input id="caddress" class="easyui-textbox"  style="width:200px">
+                </div>
+            </div>
+        </div>
+    </div>
+
+ {% endblock center %}
+{% block bottomjs %}
+    {{ block.super }}
+<script type="text/javascript">
+         var sCurIndex = undefined
+         function setSaleItemValue(index,colname,value){
+             var ed_item = $('#sale').datagrid('getEditor', {index:index,field:colname});
+             $(ed_item.target).textbox('setText',value);
+         }
+
+         function endEditing(){
+			if (sCurIndex == undefined){
+                return true
+            }
+			if ($('#sale').datagrid('validateRow', sCurIndex)){
+				$('#sale').datagrid('endEdit', sCurIndex);
+				sCurIndex = undefined;
+				return true;
+			} else {
+				return false;
+			}
+		}
+
+         function onSaleDblClickRow(index, field){if(row && row.id > 0) return;
+			if (sCurIndex != index){
+				if (endEditing()){
+					$('#sale').datagrid('selectRow', index)
+							.datagrid('beginEdit', index);
+					sCurIndex = index;
+				} else {
+					$('#sale').datagrid('selectRow', sCurIndex);
+				}
+			}
+		}
+
+         function onSaleSelect(index,rec)
+         {
+             var ed_unit = $('#sale').edatagrid('getEditor', {index:sCurIndex,field:'unit'});
+             $(ed_unit.target).combobox('setValue',rec.unit);
+
+             setSaleItemValue(sCurIndex,'manufacturer',rec.manufacturer);
+             setSaleItemValue(sCurIndex,'model',rec.model);
+             setSaleItemValue(sCurIndex,'register_code',rec.register_code);
+         }
+
+         function sale_add(){
+
+            if( sCurIndex == undefined && $('#sale').datagrid("getRows").length > 0 ){
+                $('#sale').datagrid('loadData', { total: 0, rows: [] });
+            }
+
+            if(endEditing()){
+                $('#sale').datagrid('appendRow',{
+                           sale_count:0,
+                           update_time:getDate(),
+                           customer_name:$("#cuser").textbox("getText"),
+                           customer_tel:$("#ctel").textbox("getText"),
+                           customer_address:$("#caddress").textbox("getText"),
+                });
+                sCurIndex = $('#sale').datagrid('getRows').length-1;
+                $('#sale').datagrid('selectRow', sCurIndex);
+                $('#sale').datagrid('beginEdit', sCurIndex);
+                 var cusername = $("#cuser").textbox("getText");
+                 if( cusername.length > 0 )
+                    setSaleItemValue(sCurIndex,'customer_name',cusername)
+            }
+        }
+
+        function sale_save(){
+            if (endEditing()){
+                var rows = $('#sale').datagrid('getChanges');
+                if(rows.length > 0){
+                    var inserted = $('#sale').datagrid('getChanges', "inserted"); //获取添加状态的行
+                    var effectRow = new Object();
+                    if (inserted.length == 0){ return; }
+
+                    effectRow['inserted'] = JSON.stringify(inserted);
+
+                    console.log(effectRow);
+                    $.ajax({
+                          type: "post",
+                          dataType: "json",
+                          data: effectRow,
+                          url: "{% url 'drug-sale-save' %}",
+                          success: function (data){
+                              if (data.success == 'false'){
+                                  $.messager.alert('警告', data.errors, 'info');
+                              }else{
+                                  $.messager.alert("提示", "提交成功！");
+                                  $('#sale').datagrid('acceptChanges');
+                                  $("#cuser").textbox("clear")
+                                  $("#ctel").textbox("clear")
+                                  $("#caddress").textbox("clear")
+                              }
+                          },
+                          error: function (error) {
+                              $.messager.alert('警告','提交错误！', 'info');
+                          }
+                        });
+                }
+
+			}
+
+        }
+        function sale_cancel(){
+            $('#sale').datagrid('rejectChanges');
+			sCurIndex = undefined;
+        }
+
+
+  		 function onSaleEndEdit(index,row) {
+             var ed_unit = $('#sale').datagrid('getEditor', {index:index,field:'unit'});
+             row.unitname = $(ed_unit.target).combobox('getText');
+             var ed_drugs_name = $('#sale').datagrid('getEditor', {index:index,field:'drugs_name'});
+             row.drugname = $(ed_drugs_name.target).combobox('getText');
+         }
+
+         function doSaleSearch(){
+             var sale_at = $('#sale_at').datebox('getValue');
+             if(sale_at.length == 0){
+                 $.messager.show({
+						title: '提示',
+						msg: '请输入时间',
+                        style:{
+                            right:'',
+                            bottom:''
+                        }
+					});
+                 $('#sale_at').datebox().next('span').find('input').focus();
+                 return;
+             }
+
+            var options = $('#sale').datagrid('options');
+            options.url = '{% url "drug-sale-list" %}';
+             $("#sale").datagrid('load',{
+                 sale_at: $('#sale_at').datebox('getValue'),
+             });
+             sCurIndex = undefined;
+         }
+        function numsValidate(){
+            if(sCurIndex == undefined){return -1};
+            var ed_item = $('#sale').datagrid('getEditor', {index:sCurIndex,field:'drugs_name'});
+            var itemid = $(ed_item.target).textbox('getValue');
+
+            if( itemid == undefined || itemid.length == 0 ){return -1};
+
+            result = -1;
+            $.ajax({
+                async: false,
+                url : '/drugadmin/stockitem/' + itemid +'/',
+                type : 'get',
+                success:function(data){
+                    result = data.stock_count;
+                },
+                error: function (error) {
+                    console.log('数据校验失败!');
+                    return result;
+                 }
+            });
+
+            return result;
+
+        }
+
+</script>
+{% endblock bottomjs %}

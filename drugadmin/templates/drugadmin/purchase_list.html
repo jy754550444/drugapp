@@ -1,0 +1,98 @@
+{% load static %}
+	<script type="text/javascript">
+		$(function(){
+
+		});
+	</script>
+
+    <h2>采购入库查询</h2>
+    <table id="purlist" class="easyui-datagrid" title="采购查询" style="width:90%;height:90%"
+           data-options="loadMsg: '数据加载中请稍后……',
+                        url: '{% url 'drug-purchase-search' %}',
+                        rownumbers:true,
+                        singleSelect:true,
+                        method:'get',
+                        toolbar:'#purlistbar',
+                        idField:'id',
+                        pagination:true,
+                        fitColumns:true,
+                        striped:true,
+                        pageSize:20">
+                <thead>
+                    <tr>
+                        <th data-options="field:'drugname',width:160,halign:'center',align:'center'">药品名称</th>
+                        <th data-options="field:'categoryname',width:120,halign:'center',align:'center'">药品类型</th>
+                        <th data-options="field:'unitname',width:60,halign:'center',align:'center'">计量单位</th>
+                        <th data-options="field:'model',width:120,halign:'center'">规格型号</th>
+                        <th field="manufacturer" width="240">生产厂家</th>
+                        <th data-options="field:'register_code',width:120,halign:'center',align:'center'">登记证号</th>
+                        <th data-options="field:'update_time',width:100,halign:'center',align:'center'">采购时间</th>
+                        <th data-options="field:'purchase_count',width:60,halign:'center',align:'right'">采购数量</th>
+                    </tr>
+                </thead>
+            </table>
+            <div id="purlistbar" style="padding:10px;height:auto;">
+                <span style="margin-left:10px;margin-right: 10px;">
+                    时间: 从 <input id="begin_at" class="easyui-datebox"  style="width:110px"> 到 <input id="end_at" class="easyui-datebox" style="width:110px">
+                </span>
+                 <span style="margin-right: 10px;">类型:<input id="cat_id" class="easyui-combotree" name="cat_id"
+                                                       data-options="valueField:'id',
+                                                               textField:'text',
+                                                               width:'160px',
+                                                               panelWidth:'260px',
+                                                               panelHeight:'300px',
+                                                               method:'get',
+                                                               url:'{% url 'drug-cate-list' %}'" />
+                </span>
+                <div style="margin-right: 10px;margin-top: 10px;">
+                    <span style="margin-right: 10px;">
+                        药品名称: <input id="drugname" class="easyui-textbox"  style="width:115px">
+                        登记号: <input id="reg_code" class="easyui-textbox"  style="width:80px">
+                    </span>
+                    <span style="margin-right: 10px;">
+                        厂家: <input id="factory" class="easyui-textbox"  style="width:156px">
+                        <a href="#" class="easyui-linkbutton" iconCls="icon-search" onclick="purSearch()"> 查询</a>
+                        <a href="#" class="easyui-linkbutton" iconCls="icon-search" onclick="purReset()"> 重置</a>
+                    </span>
+                </div>
+                </div>
+
+    <script type="text/javascript">
+
+        function purSearch(){
+            var begin_at = $('#begin_at').datebox('getValue');
+            var end_at = $('#end_at').datebox('getValue');
+             if(begin_at.length > 0 && end_at.length == 0){
+                 $.messager.show({
+						title: '提示',
+						msg: '请输入完整的时间段',
+                        style:{
+                            right:'',
+                            bottom:''
+                        }
+					});
+                 $('#end_at').datebox().next('span').find('input').focus();
+                 return;
+             }
+
+             $("#purlist").datagrid('load',{
+                 begin_at: $('#begin_at').datebox('getValue'),
+                 end_at: $('#end_at').datebox('getValue'),
+                 cat_id: $('#cat_id').combotree('getValue'),
+                 reg_code: $('#reg_code').textbox('getValue'),
+                 drugname: $('#drugname').textbox('getValue'),
+                 factory: $('#factory').textbox('getValue'),
+             });
+
+        }
+
+        function purReset(){
+            $('#begin_at').datebox('clear');
+            $('#end_at').datebox('clear');
+            $('#cat_id').combotree('clear');
+            $('#reg_code').textbox('clear');
+            $('#factory').textbox('clear');
+            $('#drugname').textbox('clear');
+        }
+
+    </script>

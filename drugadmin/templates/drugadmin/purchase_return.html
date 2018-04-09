@@ -1,0 +1,221 @@
+{% load static %}
+	<script type="text/javascript">
+		$(function(){
+
+		});
+	</script>
+
+    <h2>采购退货管理</h2>
+    <table id="pur_return" class="easyui-datagrid" title="采购退货单" style="width:90%;height:90%"
+           data-options="loadMsg: '数据加载中请稍后……',
+                        url: '',
+                        rownumbers:true,
+                        singleSelect:true,
+                        method:'get',
+                        toolbar:'#purRetToolbar',
+                        idField:'id',
+                        pagination:true,
+                        fitColumns:true,
+                        striped:true,
+                        pageSize:20,
+                        onEndEdit:purReturnEndEdit,
+                        onDblClickRow:onRetDblClickRow">
+                <thead>
+                    <tr>
+                        <th data-options="field:'name',width:160,halign:'center',align:'center',
+                                formatter:function(value,row){
+                                    return row.drugname;
+                                },
+                                editor:{
+                                    type:'combogrid',
+                                    options:{
+                                        idField:'id',
+                                        textField:'name',
+                                        panelWidth:'500',
+                                        method:'get',
+                                        url:'/drugadmin/itemlist/',
+                                        columns:[[
+                                            {field:'id',title:'编码',width:30},
+                                            {field:'name',title:'药品名称',width:120},
+                                            {field:'categoryname',title:'类型',width:80},
+                                            {field:'unitname',title:'单位',width:80},
+                                            {field:'model',title:'规格型号',width:100},
+                                            {field:'manufacturer',title:'厂家',width:120,align:'center'},
+                                            {field:'register_code',title:'登记号',width:90,align:'center'},
+                                            {field:'stock_count',title:'库存数量',width:60,align:'center'},
+                                        ]],
+                                        required:true,
+                                        onSelect:purReturnSelect
+                                    }
+                                }">药品名称</th>
+                        <th data-options="field:'unit',width:60,
+                                halign:'center',align:'center',
+                                formatter:function(value,row){
+                                    return row.unitname;
+                                },
+                                editor:{
+                                    type:'combobox',
+                                    options:{
+                                        valueField:'id',
+                                        textField:'name',
+                                        method:'get',
+                                        url:'/drugadmin/unitlist/',
+                                        required:true
+                                    }
+                                }">计量单位</th>
+                        <th data-options="field:'model',width:120,halign:'center',editor:{type:'textbox',options:{required:true}}">规格型号</th>
+                        <th field="manufacturer" width="240" editor="{type:'textbox',options:{required:true}}" >生产厂家</th>
+                        <th data-options="field:'register_code',width:120,halign:'center',align:'center',editor:{type:'textbox',options:{required:true}}">登记证号</th>
+                        <th data-options="field:'return_at',width:100,halign:'center',align:'center',editor:{type:'datebox',options:{required:true}}">退货时间</th>
+                        <th data-options="field:'return_count',width:60,halign:'center',align:'right',editor:'numberbox'">退货数量</th>
+                    </tr>
+                </thead>
+            </table>
+            <div id="purRetToolbar" style="padding:5px;height:auto;">
+                <div style="margin-bottom:15px;">
+                <a href="#" class="easyui-linkbutton c2" iconCls="icon-add" plain="true" onclick="pur_return_add()">增加</a>
+                <a href="#" class="easyui-linkbutton" iconCls="icon-save" plain="true" onclick="pur_return_save()">保存</a>
+                <a href="#" class="easyui-linkbutton" iconCls="icon-cancel" plain="true" onclick="pur_return_cancel()">取消</a>
+                <span style="margin-left:30px;">时间: <input id="pur_return_at" class="easyui-datebox"  style="width:110px">
+                    <a href="#" class="easyui-linkbutton" iconCls="icon-search" onclick="purReturnSearch()">查询</a>
+                </span>
+                </div>
+
+            </div>
+        </div>
+
+    <script type="text/javascript">
+        var pRetCurIndex = undefined;
+
+		function endEditing(){
+			if (pRetCurIndex == undefined){
+                return true
+            }
+			if ($('#pur_return').datagrid('validateRow', pRetCurIndex)){
+				$('#pur_return').datagrid('endEdit', pRetCurIndex);
+				pRetCurIndex = undefined;
+				return true;
+			} else {
+				return false;
+			}
+		}
+
+        function onRetDblClickRow(index, row){
+            if(row && row.id > 0) return;
+			if (pRetCurIndex != index){
+				if (endEditing()){
+					$('#pur_return').datagrid('selectRow', index)
+							.datagrid('beginEdit', index);
+
+					pRetCurIndex = index;
+				} else {
+					$('#pur_return').datagrid('selectRow', pRetCurIndex);
+				}
+			}
+		}
+
+
+        function pur_return_add(){
+
+            if( pRetCurIndex == undefined && $('#pur_return').datagrid("getRows").length > 0 ){
+                $('#pur_return').datagrid('loadData', { total: 0, rows: [] });
+            }
+
+            if(endEditing()){
+                $('#pur_return').datagrid('appendRow',
+                        {
+                            return_count:0,
+                            return_at:getDate()
+                        }
+                );
+                pRetCurIndex = $('#pur_return').datagrid('getRows').length-1;
+                $('#pur_return').datagrid('selectRow', pRetCurIndex);
+                $('#pur_return').datagrid('beginEdit', pRetCurIndex);
+            }
+        }
+
+        function pur_return_cancel(){
+            $('#pur_return').datagrid('rejectChanges');
+			pRetCurIndex = undefined;
+        }
+
+         function purReturnEndEdit(index,row) {
+             var ed_unit = $('#pur_return').datagrid('getEditor', {index:index,field:'unit'});
+             row.unitname = $(ed_unit.target).combobox('getText');
+             var ed_drugs_name = $('#pur_return').datagrid('getEditor', {index:index,field:'name'});
+             row.drugname = $(ed_drugs_name.target).combobox('getText');
+         }
+
+        function pur_return_save(){
+            if (endEditing()){
+                var rows = $('#pur_return').datagrid('getChanges');
+                if(rows.length > 0){
+                    var inserted = $('#pur_return').datagrid('getChanges', "inserted"); //获取添加状态的行
+                    var effectRow = new Object();
+                    if (inserted.length == 0){ return; }
+
+                    effectRow['inserted'] = JSON.stringify(inserted);
+
+                    console.log(effectRow);
+                    $.ajax({
+                          type: "post",
+                          dataType: "json",
+                          data: effectRow,
+                          url: "{% url 'drug-purreturn-save' %}",
+                          success: function (data){
+                              if (data.success == 'false'){
+                                  $.messager.alert('警告', data.errors, 'info');
+                              }else{
+                                  $.messager.alert("提示", "提交成功！");
+                                  $('#pur_return').datagrid('acceptChanges');
+                              }
+                          },
+                          error: function (error) {
+                              $.messager.alert('警告','提交错误！', 'info');
+                          }
+                        });
+                }
+
+			}
+
+        }
+
+        function purReturnSearch(){
+            var pur_return_at = $('#pur_return_at').datebox('getValue');
+             if(pur_return_at.length == 0){
+                 $.messager.show({
+						title: '提示',
+						msg: '请输入时间',
+                        style:{
+                            right:'',
+                            bottom:''
+                        }
+					});
+                 $('#pur_return_at').datebox().next('span').find('input').focus();
+                 return;
+             }
+
+            var options = $('#pur_return').datagrid('options');
+            options.url = '{% url "drug-purreturn-list" %}';
+             $("#pur_return").datagrid('load',{
+                 pur_return_at: $('#pur_return_at').datebox('getValue'),
+             });
+            pRetCurIndex = undefined;
+
+        }
+         function purReturnSelect(index,rec){
+
+             var ed_unit = $('#pur_return').edatagrid('getEditor', {index:pRetCurIndex,field:'unit'});
+             $(ed_unit.target).combobox('setValue',rec.unit);
+
+             var ed_manufacturer = $('#pur_return').edatagrid('getEditor', {index:pRetCurIndex,field:'manufacturer'});
+             $(ed_manufacturer.target).textbox('setText',rec.manufacturer);
+
+             var ed_model = $('#pur_return').edatagrid('getEditor', {index:pRetCurIndex,field:'model'});
+             $(ed_model.target).textbox('setText',rec.model);
+
+             var ed_regcode = $('#pur_return').edatagrid('getEditor', {index:pRetCurIndex,field:'register_code'});
+             $(ed_regcode.target).textbox('setText',rec.register_code);
+         }
+
+    </script>
