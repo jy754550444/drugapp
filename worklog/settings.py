@@ -46,9 +46,7 @@ INSTALLED_APPS = [
     'worklog',
     'administration',
     'drugadmin',
-
     #'smart_selects',
-
 ]
 
 MIDDLEWARE = [

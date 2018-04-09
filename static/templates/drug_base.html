@@ -1,7 +1,7 @@
 {% load static %}<!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
+    <meta charset="utf-8">
     <title>{% block title %}农药追溯系统{% endblock %}</title>
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -9,7 +9,7 @@
     {% block  stylesheet %}
     <link  href="{% static "css/bootstrap-cerulean.min.css" %}" rel="stylesheet">
 	<link  href="{% static "css/dataTables.bootstrap.min.css" %}" rel="stylesheet">
-
+    <link  href="{% static "css/laydate.css" %}" rel="stylesheet">
     <link href="{% static "css/charisma-app.css" %}" rel="stylesheet">
     <link href="{% static "css/animate.min.css" %}" rel="stylesheet">
     {% endblock stylesheet %}
@@ -119,6 +119,7 @@
 <script src="{% static "js/jquery.uploadify-3.1.min.js" %}"></script>
 <script src="{% static "js/jquery.history.js" %}"></script>
 <script src="{% static "js/charisma.js" %}"></script>
+<script src="{% static "js/laydate.js" %}"></script>
 {% endblock bottomjs %}
 
 {% block extrajs %}

@@ -1,0 +1,94 @@
+{% load static %}<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    {% block extrahead %}
+    <script type="text/javascript">
+        var table
+        $(document).ready(function () {
+
+            $("#category").treeview({
+                animated: "fast",
+                collapsed: true,
+                unique: true
+            });
+
+            table = $('#datastable').DataTable({
+                paging: true,
+                ordering: true,
+                "sDom": "<'row'<'col-md-6'><'col-md-6'>r>t<'row'<'col-md-5'i><'col-md-7 pull-right'p>>",
+                "language": {
+                    "url": "{% static 'language/Chinese.json' %}"
+                },
+                //"lengthMenu":[1,4,6,8,10],
+                "serverSide": true,
+                ajax: {
+                    url: '{% url "api-groupsale" %}',
+                    type: 'get',
+                    data: function (d) {
+                        d.catids = $("#catids").val();
+                        d.start_times = $("#start_times").val();
+                        d.end_times = $("#end_times").val();
+                    },
+                },
+                columns: [
+                    {data: 'drugname'},
+                    {data: 'category'},
+                    {data: 'units'},
+                    {data: 'model'},
+                    {data: 'manufacturer'},
+                    {data: 'register_code'},
+                    {data: 'update_time'},
+                    {data: 'group_name'},
+                    {data: 'sale_count'},
+                ]
+            });
+
+
+        });
+
+        function getDrugList(catids) {
+            table.search("");
+            $("#catids").val(catids);
+            table.ajax.reload();
+
+        }
+        function querys() {
+            table.ajax.reload();
+        }
+
+    </script>
+    {% endblock extrahead %}
+</head>
+<body>
+{% block rightmiddle %}
+    <!-- 右侧内容中部-->
+    <div class="tab-pane" id="custom">
+        <div class="box-content">
+            <input type="hidden" id="catids" value=""/>
+            <div>起始时间:<input type="text" class="test3" id="start_times" style="width: 150px;" value="">&nbsp;&nbsp;结束时间:<input
+                                    type="text" class="test4" id="end_times" style="width: 150px;" value="">
+                                <button type="button" onclick="querys()">查询</button>
+                            </div>
+            <table id="datastable"
+                   class="table table-striped table-bordered bootstrap-datatable datatable responsive">
+                <thead>
+                <tr>
+                    <th>药品名称</th>
+                    <th>药品类别</th>
+                    <th>计量单位</th>
+                    <th>规格型号</th>
+                    <th>生产厂家</th>
+                    <th>登记型号</th>
+                    <th>销售时间</th>
+                    <th>单位名称</th>
+                    <th>库存数量</th>
+                </tr>
+                </thead>
+
+            </table>
+        </div>
+    </div>
+{% endblock rightmiddle %}
+</body>
+</html>

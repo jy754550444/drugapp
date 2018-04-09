@@ -1,4 +1,5 @@
 # coding=utf-8
+
 import mptt
 from django.db import models
 from mptt.fields import TreeForeignKey
@@ -9,11 +10,9 @@ from .models import DrugStock,Category,Unit,Region,DrugSale,DrugPurchase
 from mptt.admin import MPTTModelAdmin
 # Register your models here.
 
-
-# add a parent foreign key
-# TreeForeignKey(Group, blank=True, null=True,verbose_name=u'父类', db_index=True,on_delete=models.CASCADE).contribute_to_class(Group, 'parent')
-#
-# mptt.register(Group, order_insertion_by=['name'])
+#add a parent foreign key
+TreeForeignKey(Group, blank=True, null=True,verbose_name='父类',on_delete=models.CASCADE, db_index=True).contribute_to_class(Group, 'parent')
+mptt.register(Group, order_insertion_by=['name'])
 
 #药品库存
 
@@ -56,8 +55,6 @@ class CategoryAdmin(MPTTModelAdmin):
         else:
             return qs.filter(user=request.user)
 
-admin.site.register(Category, CategoryAdmin)
-
 
 #计量单位
 class UnitAdmin(admin.ModelAdmin):
@@ -89,9 +86,9 @@ admin.site.register(Region,RegionAdmin)
 
 #药品销售
 class DrugSaleAdmin(admin.ModelAdmin):
-    list_display = ['drugs_name','unit','model','manufacturer','register_code','customer_name','customer_tel','sale_count', 'update_time', ]
+    list_display = ['drugs_name','unit','model','manufacturer','register_code','customer_name','customer_tel','sale_count', 'update_time','retrea_count' ]
     fields = ('drugs_name', 'unit', 'model', 'manufacturer', 'register_code', 'customer_name', 'customer_tel',
-              'customer_address', 'sale_count','update_time')
+              'customer_address', 'sale_count','update_time','retreat','retrea_count')
     search_fields = ['drugs_name__name','customer_name','customer_tel','model','manufacturer','register_code']
     list_filter = ('drugs_name',)
 
@@ -105,12 +102,24 @@ class DrugSaleAdmin(admin.ModelAdmin):
             return qs.filter(company_id=group)
 
     def save_model(self, request, obj, form, change):
-
         ds = DrugStock.objects.get(id=obj.drugs_name.id)
-        if ds.stock_count > obj.sale_count:
-            ds.stock_count = ds.stock_count - obj.sale_count
-            ds.save()
-
+        if change:
+            if obj.retreat == True:
+                if obj.sale_count >=obj.retrea_count:
+                    ds.stock_count = obj.retrea_count+ds.stock_count
+                    obj.sale_count = obj.sale_count-obj.retrea_count
+                    obj.retrea_count = obj.retrea_count
+                    ds.save()
+                    obj.save()
+                else:
+                    # print("退货大于库存量，不能退货")
+                    return not change
+            else:
+                return not change
+        else:
+            if ds.stock_count > obj.sale_count:
+                ds.stock_count = ds.stock_count - obj.sale_count
+                ds.save()
         obj.input_owner = request.user
         userobj = request.user
         if userobj.groups.count() > 0:
@@ -120,10 +129,10 @@ class DrugSaleAdmin(admin.ModelAdmin):
         obj.save()
 admin.site.register(DrugSale, DrugSaleAdmin)
 
-
+#采购
 class DrugPurchaseAdmin(admin.ModelAdmin):
-    list_display = ('drugs_name','unit','model','manufacturer','register_code','purchase_count','update_time')
-    fields  = ('drugs_name','unit','model','manufacturer','register_code','purchase_count','update_time')
+    list_display = ('drugs_name','unit','model','manufacturer','register_code','purchase_count','update_time','retrea_count')
+    fields  = ('drugs_name','unit','model','manufacturer','register_code','purchase_count','update_time','retreat','retrea_count')
     search_fields = ['drugs_name__name','model','manufacturer','register_code']
     list_filter = ('update_time',)
 
@@ -137,6 +146,24 @@ class DrugPurchaseAdmin(admin.ModelAdmin):
             return qs.filter(group=group)
 
     def save_model(self, request, obj, form, change):
+        ad = DrugStock.objects.get(id = obj.drugs_name.id)
+        if change:
+            if obj.retreat == True:
+                if obj.purchase_count < obj.retrea_count:
+                    # print("退货大于库存量，不能退货")
+                    return not change
+                else:
+                    ad.stock_count = ad.stock_count-obj.retrea_count
+                    obj.purchase_count = obj.purchase_count-obj.retrea_count
+                    obj.retrea_count = obj.retrea_count
+                    ad.save()
+                    obj.save()
+            else:
+                return not change
+        else:
+            ad.stock_count = obj.purchase_count + ad.stock_count
+            ad.save()
+
         obj.input_owner = request.user
         userobj = request.user
         if userobj.groups.count() > 0:
@@ -144,12 +171,5 @@ class DrugPurchaseAdmin(admin.ModelAdmin):
             group = Group.objects.get(pk=groups[0].id)
             obj.group = group
         obj.save()
-        print("-----------------")
-        print(obj.drugs_name)
-       # re = super(DrugPurchaseAdmin,self).save_model(request, obj, form, change)
-        ad = DrugStock.objects.get(id = obj.drugs_name.id)
-        ad.stock_count = obj.purchase_count + ad.stock_count
-        ad.save()
         return obj
-
 admin.site.register(DrugPurchase,DrugPurchaseAdmin)

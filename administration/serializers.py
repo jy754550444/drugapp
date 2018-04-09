@@ -77,7 +77,7 @@ class DrugPurchaseListSerializer(ModelSerializer):
             'units',
             'model',
             'manufacturer',
-            'update_time',  #采购时间
+            'update_time',
             'register_code',
             'group_name',
             'purchase_count',
@@ -99,10 +99,13 @@ class DrugSaleListSerializer(ModelSerializer):
             'units',
             'model',
             'manufacturer',
-            'update_time',  #销售时间
+            'update_time',
             'register_code',
             'group_name',
             'sale_count',
             'customer_name',
             'customer_tel'
         ]
+
+
+
