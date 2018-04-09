@@ -40,10 +40,13 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'sitetree',
     "rest_framework",
+    'mptt',
     'worklog',
     'administration',
-    'mptt',
+    'drugadmin',
+
     #'smart_selects',
 
 ]
@@ -87,7 +90,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'pesticides',
         'USER':'root',
-        'PASSWORD':'123456',
+        'PASSWORD':'',
         'HOST':'localhost',
         'PORT':'3306',
         'OPTIONS':{
@@ -155,3 +158,29 @@ STATICFILES_DIRS = (
 
 # JQUERY_URL = False
 # USE_DJANGO_JQUERY = True
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework.authentication.BasicAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
+    )
+}
+
+
+# LOGGING = {
+#     'version': 1,
+#     'disable_existing_loggers': False,
+#     'handlers': {
+#         'console':{
+#             'level':'DEBUG',
+#             'class':'logging.StreamHandler',
+#         },
+#     },
+#     'loggers': {
+#         'django.db.backends': {
+#             'handlers': ['console'],
+#             'propagate': True,
+#             'level':'DEBUG',
+#         },
+#     }
+# }

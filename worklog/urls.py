@@ -43,6 +43,8 @@ urlpatterns = [
     url(r'^api_stocklist/$', DrugStockListView.as_view(), name="api-stocklist"),
     url(r'^api_purchaselist/$', DrugPurchaseListView.as_view(), name="api-purchaselist"),
     url(r'^api_salelist/$', DrugSaleListView.as_view(), name="api-salelist"),
+    url(r'^drugadmin/', include('drugadmin.urls')),
+    url(r'^api-auth/', include('rest_framework.urls')),
     # url(r'^jet/', include('jet.urls', 'jet')),  # Django JET URLS
     # url(r'^jet/dashboard/', include('jet.dashboard.urls', 'jet-dashboard')),  # Django JET dashboard URLSc
 ]
